@@ -19,15 +19,34 @@ namespace xen\application\bootstrap;
 /**
  * Class Autoloader
  *
- * @package xen
- * @author Ismael Trascastro itrascastro@xenframework.com
+ * Allow auto load of classes that are inside of registered directories
+ * using spl_autoload_register
  *
+ * An auto loader for each directory can be created but it is more efficient to have one auto loader with many
+ * directories registered
+ *
+ * @package    xenframework
+ * @subpackage xen\application\bootstrap
+ * @author     Ismael Trascastro <itrascastro@xenframework.com>
+ * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
+ * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
+ * @link       https://github.com/xenframework/xen
+ * @since      Class available since Release 1.0.0
  */
 class Autoloader
 {
+    /**
+     * Set of directories to be used in auto load
+     *
+     * @var array
+     */
     private $_includePaths;
 
     /**
+     * __construct
+     *
+     * Sets the $_includePaths
+     *
      * @param string|array $_includePath one or more include paths to use
      */
     public function __construct($_includePath)
@@ -36,7 +55,9 @@ class Autoloader
     }
 
     /**
-     * Sets the include paths to be used in this autoloader
+     * setIncludePath
+     *
+     * Sets the include paths to be used in this auto loader
      *
      * @param string|array $_includePath one or more include paths to use
      */
@@ -46,6 +67,8 @@ class Autoloader
     }
 
     /**
+     * register
+     *
      * Creates a new entry in SPL stack
      *
      * @return bool
@@ -56,6 +79,8 @@ class Autoloader
     }
 
     /**
+     * unregister
+     *
      * Removes an entry from SPL stack
      *
      * @return bool
@@ -66,24 +91,30 @@ class Autoloader
     }
 
     /**
-     * It is mandatory to put the require sentence into an if statement
-     * Otherwise php autoload will use this function even if the file does not exist
+     * _autoload
      *
-     * We use require instead of require_once because of better performance
-     * require_once looks into a log every time we try to require a file
-     * info: http://gazehawk.com/blog/php-require-performance/
+     * This function will be used by spl_autoload_register when a new $className instance is created
      *
-     * @param $className to be autoloaded
+     * It is mandatory to test if the file exists because require does not return any value.
+     * If the test is avoided and there are more than one directories in the includePath, _autoload will always choose
+     * the first one, even if the file is in another directory
      *
-     * @return bool false if autoload attempt fails true otherwise
+     * Directory structure has to be the same as the Namespace
+     *
+     * @param $className The class to be instantiated
+     *
+     * @return bool true if the file exists in the path otherwise false
      */
     private function _autoload($className)
     {
         $file = str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
 
         foreach($this->_includePaths as $includePath) {
-            $attemptfile = $includePath . DIRECTORY_SEPARATOR . $file;
-            if ($this->_require($attemptfile)) {
+
+            $attemptFile = $includePath . DIRECTORY_SEPARATOR . $file;
+
+            if ($this->_require($attemptFile)) {
+
                 return true;
             }
         }
@@ -91,12 +122,23 @@ class Autoloader
         return false;
     }
 
+    /**
+     * _require
+     *
+     * Try to require a file
+     *
+     * @param string $file
+     *
+     * @return bool true if file exists otherwise false
+     */
     private function _require($file)
     {
         if (file_exists($file)) {
+
             require $file;
             return true;
         }
+
         return false;
     }
 }

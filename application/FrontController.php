@@ -35,10 +35,10 @@ class FrontController
     private $_statusCode;
     private $_eventSystem;
 
-    public function __construct($_bootstrap, $_request)
+    public function __construct($_bootstrap)
     {
         $this->_bootstrap = $_bootstrap;
-        $this->_request = $_request;
+        $this->_request = $_bootstrap->getResource('Request');
         $this->_eventSystem = $_bootstrap->getResource('EventSystem');
     }
 

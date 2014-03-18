@@ -23,57 +23,93 @@ use xen\eventSystem\EventSystem;
 use xen\http\Session;
 use xen\mvc\helpers\HelperBroker;
 use xen\mvc\view\Phtml;
-use xen\mvc\view\View;
-
 
 /**
- * Class Bootstrap
+ * Class BootstrapBase
  *
- * @package xen\application\bootstrap
- * @author  Ismael Trascastro itrascastro@xenframework.com
+ * No instances of BootstrapBase are created.
+ * bootstrap\Bootstrap inherits from this class and it is instantiated in xen\application\Application
  *
+ * Bootstrap does three things:
+ *
+ *      1. Bootstrap the application
+ *      2. DIC (Dependency Injection Container)
+ *      3. Resolve controllers dependencies
+ *
+ * BootstrapBase creates the default resources/dependencies. It is used a base class to extend from by the
+ * bootstrap\Bootstrap where an IoC takes place by the application. There the specific
+ * resources/dependencies can be created.
+ *
+ * Bootstrap is used as a SL (Service Locator) in the FrontController. This is the only place where it happens.
+ * Controllers can not access to the Bootstrap. All the dependencies are injected to them from the Bootstrap.
+ *
+ * Dependencies IoC
+ *
+ * Application can define his own dependencies in 'application/configs/dependencies.php' which is used to resolve the
+ * controller dependencies
+ *
+ * The resources/dependencies created in Bootstrap are:
+ *
+ *      - Config                => 'application/configs/config.ini'
+ *      - ApplicationConfig     => 'application/configs/application.ini'
+ *      - ViewHelperBroker      => Factory for view helpers
+ *      - ActionHelperBroker    => Factory for action helpers
+ *      - LayoutPath            => Path to the default layout
+ *      - Layout                => The default layout
+ *      - EventSystem           => System for manage events
+ *      - Dependencies          => 'application/configs/dependencies.php'
+ *      - Database_X            => These resources are not created by default
+ *      - Session               => Starts the session
+ *
+ * Other resources stored in the Bootstrap are:
+ *
+ *      - Request
+ *      - Router
+ *      - Response
+ *
+ * @package    xenframework
+ * @subpackage xen\application\bootstrap
+ * @author     Ismael Trascastro <itrascastro@xenframework.com>
+ * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
+ * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
+ * @link       https://github.com/xenframework/xen
+ * @since      Class available since Release 1.0.0
  */
 class BootstrapBase
 {
-    protected $_appEnv;
+    /**
+     * Container for dependencies
+     *
+     * @var array
+     */
     protected $_resources;
 
     /**
-     * @param $_appEnv
+     * __construct
      *
-     * we call _autoload here instead of as an _init resource because we need it to be the first created resource
+     * Initializes the container to an empty array
      */
-    public function __construct($_appEnv)
+    public function __construct()
     {
-        $this->_appEnv = $_appEnv;
         $this->_resources = array();
     }
 
     /**
-     * @param mixed $appEnv
-     */
-    public function setAppEnv($appEnv)
-    {
-        $this->_appEnv = $appEnv;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getAppEnv()
-    {
-        return $this->_appEnv;
-    }
-
-    /*
-     * Here we call every _init method in application/Bootstrap.php
-     * This initializes resources and store them in properties
+     * bootstrap
+     *
+     * Calls all Bootstrap methods
+     *
+     * First the ones located here in BootstrapBase (_default) and then the ones located at
+     * application\Bootstrap\Bootstrap (_init)
+     *
+     * Every call to an _default method or _init method (located at application\Bootstrap\Bootstrap) returns a
+     * resource/dependency which is stored in the container $this->_resources
+     *
      */
     public function bootstrap()
     {
-        $methods = get_class_methods($this);
+        $methods = $this->_BootstrapDefaults(get_class_methods($this));
 
-        $methods = $this->_BootstrapDefaults($methods);
         forEach($methods as $method)
         {
             $resourceName = ucfirst(substr($method, 5));
@@ -82,9 +118,13 @@ class BootstrapBase
     }
 
     /**
-     * @param $methods
+     * _bootstrapDefaults
      *
-     * @return array $initMethods
+     * Calls all _default methods and returns all _init methods
+     *
+     * @param array $methods All the methods in bootstrap\Bootstrap inherited from here included
+     *
+     * @return array The _init methods from bootstrap\Bootstrap
      */
     private function _bootstrapDefaults($methods)
     {
@@ -93,9 +133,12 @@ class BootstrapBase
         forEach($methods as $method)
         {
             if (strlen($method) > 8 && substr($method, 0, 8) == '_default') {
+
                 $resourceName = ucfirst(substr($method, 8));
                 $this->_resources[$resourceName] = $this->$method();
+
             } else if (strlen($method) > 5 && substr($method, 0, 5) == '_init') {
+
                 $initMethods[] = $method;
             }
         }
@@ -103,18 +146,43 @@ class BootstrapBase
         return $initMethods;
     }
 
+    /**
+     * addResources
+     *
+     * Stores an array of resources in the container
+     *
+     * @param array $resources Associative array resource => value
+     */
     public function addResources(array $resources)
     {
         foreach ($resources as $resource => $value) {
+
             $this->_resources[$resource] = $value;
         }
     }
 
+    /**
+     * addResource
+     *
+     * Stores $resource in the container setted to $value
+     *
+     * @param $resource
+     * @param $value
+     */
     public function addResource($resource, $value)
     {
         $this->_resources[$resource] = $value;
     }
 
+    /**
+     * getResource
+     *
+     * If the resource exists in the container then it is returned otherwise null
+     *
+     * @param $resource identifier of the resource
+     *
+     * @return the resource
+     */
     public function getResource($resource)
     {
         return (array_key_exists($resource, $this->_resources) ? $this->_resources[$resource] : null);
@@ -135,7 +203,7 @@ class BootstrapBase
 
     protected function _defaultApplicationConfig()
     {
-        return new Ini('application.ini', $this->_appEnv);
+        return new Ini('application.ini', $this->getResource('AppEnv'));
     }
 
     protected function _defaultViewHelperBroker()
@@ -198,7 +266,7 @@ class BootstrapBase
 
     protected function _defaultConfig()
     {
-        $config = new Ini('config.ini', $this->_appEnv);
+        $config = new Ini('config.ini', $this->getResource('AppEnv'));
 
         return $config;
     }
@@ -276,7 +344,7 @@ class BootstrapBase
 
     public function resolveController($controller, $controllerName, $action, $error = false)
     {
-        $controller->setAppEnv($this->_appEnv);
+        $controller->setAppEnv($this->getResource('AppEnv'));
 
         $controller->setEventSystem($this->_resources['EventSystem']);
 

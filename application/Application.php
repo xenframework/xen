@@ -22,18 +22,70 @@ use xen\http\Request;
 
 require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/application/bootstrap/Autoloader.php');
 
+/**
+ * Class Application
+ *
+ * Description
+ *
+ * @package    xenframework
+ * @subpackage xen\application
+ * @author     Ismael Trascastro <itrascastro@xenframework.com>
+ * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
+ * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
+ * @link       https://github.com/xenframework/xen
+ * @since      Class available since Release 1.0.0
+ */
 class Application 
 {
+    /**
+     * @const DEVELOPMENT
+     */
     const DEVELOPMENT   = 'development';
+
+    /**
+     * @const TEST
+     */
     const TEST          = 'test';
+
+    /**
+     * @const PRODUCTION
+     */
     const PRODUCTION    = 'production';
 
+    /**
+     * @var Request
+     */
     private $_request;
+
+    /**
+     * @var Autoloader
+     */
     private $_autoLoader;
+
+    /**
+     * @var Bootstrap
+     */
     private $_bootstrap;
+
+    /**
+     * @var FrontController
+     */
     private $_frontController;
+
+    /**
+     * @var string
+     */
     private $_appEnv;
 
+    /**
+     * __construct
+     *
+     * Define the application state
+     * Call the autoloader
+     * Creates the Request object from Globals
+     *
+     * @param string $_appEnv {DEVELOPMENT, TEST, PRODUCTION} Defines the application state
+     */
     public function __construct($_appEnv)
     {
         $this->_appEnv = $_appEnv;
@@ -41,23 +93,42 @@ class Application
         $this->_request = Request::createFromGlobals();
     }
 
+    /**
+     * _autoLoader
+     *
+     * Enables auto load for 'application' and 'vendor' directories
+     * It is done in the same autoloader because it is more efficient (instead of one autoloader per directory)
+     */
     private function _autoLoader()
     {
         $this->_autoLoader = new Autoloader(array('application', 'vendor'));
         $this->_autoLoader->register();
     }
 
+    /**
+     * bootstrap
+     *
+     * The Bootstrap object is created with 3 initial resources (appEnv, Autoloader, Request) and then we
+     * bootstrap the application
+     */
     public function bootstrap()
     {
-        $this->_bootstrap = new Bootstrap($this->_appEnv);
+        $this->_bootstrap = new Bootstrap();
+        $this->_bootstrap->addResource('AppEnv', $this->_appEnv);
         $this->_bootstrap->addResource('AutoLoader', $this->_autoLoader);
         $this->_bootstrap->addResource('Request', $this->_request);
         $this->_bootstrap->bootstrap();
     }
 
+    /**
+     * run
+     *
+     * FrontController is created with the Bootstrap as a Service Locator
+     * and then the application execution starts with FrontController run method
+     */
     public function run()
     {
-        $this->_frontController = new FrontController($this->_bootstrap, $this->_request);
+        $this->_frontController = new FrontController($this->_bootstrap);
         $this->_frontController->run();
     }
 }
