@@ -67,6 +67,10 @@ use xen\mvc\view\Phtml;
  *      - Router
  *      - Response
  *
+ * Other bootstrap actions like:
+ *
+ *      - Read handlers from 'application/configs/handlers.php' and add them to EventSystem
+ *
  * @package    xenframework
  * @subpackage xen\application\bootstrap
  * @author     Ismael Trascastro <itrascastro@xenframework.com>
@@ -188,10 +192,13 @@ class BootstrapBase
         return (array_key_exists($resource, $this->_resources) ? $this->_resources[$resource] : null);
     }
 
-    /*
-     * Default Resources
+    /**
+     * _defaultSession
+     *
+     * The Session resource
+     *
+     * @return Session
      */
-
     protected function _defaultSession()
     {
         $session = new Session();
@@ -201,35 +208,87 @@ class BootstrapBase
         return $session;
     }
 
+    /**
+     * _defaultApplicationConfig
+     *
+     * Load the application.ini and stores it as a resource
+     *
+     * @return Ini The ApplicationConfig resource
+     */
     protected function _defaultApplicationConfig()
     {
         return new Ini('application.ini', $this->getResource('AppEnv'));
     }
 
+    /**
+     * _defaultConfig
+     *
+     * Load the config.ini and stores it as a resource
+     *
+     * @return Ini The Config resource
+     */
+    protected function _defaultConfig()
+    {
+        $config = new Ini('config.ini', $this->getResource('AppEnv'));
+
+        return $config;
+    }
+
+    /**
+     * _defaultViewHelperBroker
+     *
+     * HelperBroker resource
+     *
+     * It is a factory for View Helpers
+     *
+     * @return HelperBroker
+     */
     protected function _defaultViewHelperBroker()
     {
         return new HelperBroker(HelperBroker::VIEW_HELPER);
     }
 
+    /**
+     * _defaultActionHelperBroker
+     *
+     * ActionHelperBroker
+     *
+     * It is a factory for Action Helpers
+     *
+     * @return HelperBroker
+     */
     protected function _defaultActionHelperBroker()
     {
         return new HelperBroker(HelperBroker::ACTION_HELPER);
     }
 
+    /**
+     * _defaultLayoutPath
+     *
+     * The default layout path defined in configs/application.ini
+     *
+     * @return string layout path
+     */
     protected function _defaultLayoutPath()
     {
         $applicationConfig = $this->getResource('ApplicationConfig');
 
         if (isset($applicationConfig->defaultLayoutPath)) {
+
             return str_replace('/', DIRECTORY_SEPARATOR, $applicationConfig->defaultLayoutPath);
         }
+
         return null;
     }
 
     /**
-     * Here we set ViewHelperBroker, then it will be propagated to child phtml in render()
+     * _defaultLayout
      *
-     * @return Phtml
+     * Creates a default layout
+     *
+     * ViewHelperBroker is set here, it will be propagated to child partials in render() method
+     *
+     * @return Phtml The layout
      */
     protected function _defaultLayout()
     {
@@ -240,11 +299,36 @@ class BootstrapBase
         return $layout;
     }
 
+    /**
+     * _defaultEventSystem
+     *
+     * EventSystem resource
+     *
+     * @return EventSystem
+     */
     protected function _defaultEventSystem()
     {
         return new EventSystem();
     }
 
+    /**
+     * _defaultHandlers
+     *
+     * Factory for handlers from 'application/configs/handlers.php'
+     *
+     * There are two kinds of handlers:
+     *
+     *      1. The ones who have the same name as the event they handle
+     *         (no need to define them in 'application/configs/handlers.php')
+     *
+     *      2. The ones who have a different name or the ones who handle more than one event
+     *         (they are defined in 'application/configs/handlers.php')
+     *
+     * This bootstrap method is for the second kind
+     *
+     * It does not create a resource but it create all handlers located at 'application/configs/handlers.php' and add
+     * them to the eventSystem
+     */
     protected function _defaultHandlers()
     {
         $handlers = require str_replace('/', DIRECTORY_SEPARATOR, 'application/configs/handlers.php');
@@ -252,6 +336,7 @@ class BootstrapBase
         $eventSystem = $this->getResource('EventSystem');
 
         foreach ($handlers as $handler) {
+
             $handlerName = 'eventHandlers\\' . $handler['handler'];
             $handlerInstance = new $handlerName();
             $handlerInstance->addHandles($handler['events']);
@@ -259,22 +344,35 @@ class BootstrapBase
         }
     }
 
+    /**
+     * _defaultDependencies
+     *
+     * IoC loading dependencies from 'application/configs/dependencies.php'
+     *
+     * @return array The dependencies
+     */
     protected function _defaultDependencies()
     {
         return require str_replace('/', DIRECTORY_SEPARATOR, 'application/configs/dependencies.php');
     }
 
-    protected function _defaultConfig()
-    {
-        $config = new Ini('config.ini', $this->getResource('AppEnv'));
-
-        return $config;
-    }
-
-    /*
-     * Other resources not auto executed
+    /**
+     * _dependencyDatabase
+     *
+     * Load the database config 'application/configs/databases.php'
+     *
+     * Can exist more than one database:
+     *
+     *      The first time 'application/configs/databases.php' is loaded into Databases resource
+     *
+     *      Each Database resource is named as follows: Database_ID
+     *
+     *      So when this method is called with $db ID, it creates the Database_$db resource (an Adapter instance)
+     *      and stores it in the container
+     *
+     *
+     * @param string $db The ID of the database
      */
-
     protected function _dependencyDatabase($db)
     {
         if (!array_key_exists('Databases', $this->_resources)) {
