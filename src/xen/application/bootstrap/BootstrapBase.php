@@ -390,14 +390,23 @@ class BootstrapBase
     }
 
     /**
-     * Resolve dependencies for a given object
+     * resolveDependencies
      *
-     * We injects dependencies via setters methods, so every resource has to be their setters methods created for their
-     * dependencies.
+     * Returns an object with all its dependencies resolved
      *
-     * @param $object
+     * @param string | object $object
      *
-     * @return mixed
+     * $object can be either:
+     *
+     *      - An object to be resolved (usually a controller)
+     *              A controller has a model
+     *              A model has a Database
+     *      - A resource name
+     *      - A Database_ID dependency
+     *      - An entry in Dependencies resource
+     *      - An object that has not dependencies but it is needed as a dependency for another objects
+     *
+     * @return object With all its dependencies resolved
      */
     public function resolveDependencies($object)
     {
@@ -405,41 +414,82 @@ class BootstrapBase
 
         //it can be an object
         if (is_object($object)) {
+
             $className = get_class($object);
+
             if (array_key_exists($className, $dependencies)) {
+
                 foreach ($dependencies[$className] as $dependency => $value) {
+
                     $setMethod = 'set' . ucfirst($dependency);
                     $object->$setMethod($this->resolveDependencies($value));
                 }
             }
+
             $this->_resources[$className] = $object;
+
         //it can already be a resource
         } else if (array_key_exists($object, $this->_resources)) {
+
             return $this->_resources[$object];
+
         //it can be a resource not already executed in bootstrap
         //this kind of resources are added to bootstrap by its own like any other bootstrap resource
         } else if (method_exists($this, '_dependency' . current(explode("_", $object)))) {
+
             $db = substr($object, 9);
             $this->_dependencyDatabase($db);
             return $this->_resources[$object];
+
         //it is not an object but it has dependencies and we have to resolve them and then instantiate it
         } else if (array_key_exists($object, $dependencies)) {
+
             $resource = new $object();
+
             foreach ($dependencies[$object] as $dependency => $value) {
+
                 $arg = $this->resolveDependencies($value);
                 $setMethod = 'set' . ucfirst($dependency);
                 $resource->$setMethod($arg);
             }
+
             $this->_resources[$object] = $resource;
             return $resource;
+
         //it is not an object and it does not have dependencies but it must be instantiated
         //because it is needed as a dependency for another resource
         } else {
+
             $this->_resources[$object] = new $object();
             return $this->_resources[$object];
         }
     }
 
+    /**
+     * resolveController
+     *
+     * Resolves a controller injecting all its dependencies
+     * (besides of the ones declared in 'application/configs/dependencies.php')
+     *
+     * Dependencies are:
+     *
+     *      - AppEnv
+     *      - EventSystem
+     *      - Layout
+     *      - Router (in the Layout)
+     *      - ActionHelperBroker
+     *      - Config
+     *      - Params (Controller params from the Router)
+     *      - View
+     *      - Request
+     *      - Session
+     *      - Response
+     *
+     * @param object    $controller         The controller to be resolved
+     * @param string    $controllerName     The controller name
+     * @param string    $action             The action name
+     * @param bool      $error              If it is the ErrorController or not
+     */
     public function resolveController($controller, $controllerName, $action, $error = false)
     {
         $controller->setAppEnv($this->getResource('AppEnv'));
