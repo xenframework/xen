@@ -475,6 +475,7 @@ class BootstrapBase
      *
      *      - AppEnv
      *      - EventSystem
+     *      - Router
      *      - Layout
      *      - Router (in the Layout)
      *      - ActionHelperBroker
