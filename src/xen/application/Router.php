@@ -47,7 +47,7 @@ class Router
 
                 $found = true;
 
-                if (in_array($role, $value['allow'])) {
+                if (empty($value['allow']) || in_array($role, $value['allow'])) {
 
                     $params = array();
 
