@@ -28,6 +28,7 @@ abstract class Controller
     protected $_actionHelperBroker;
     protected $_eventSystem;
     protected $_appEnv;
+    protected $_router;
 
     public function __construct()
     {
@@ -215,6 +216,22 @@ abstract class Controller
     }
 
     /**
+     * @param mixed $router
+     */
+    public function setRouter($router)
+    {
+        $this->_router = $router;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRouter()
+    {
+        return $this->_router;
+    }
+
+    /**
      * We extend layout properties to partials
      */
     public function render()
@@ -224,7 +241,8 @@ abstract class Controller
 
     protected function _redirect($controller, $action)
     {
-        header('location:' . '/' . $controller . '/' . $action . '/');
+        $url = $this->_router->toUrl($controller, $action);
+        header('location:' . $url);
         exit;
     }
 

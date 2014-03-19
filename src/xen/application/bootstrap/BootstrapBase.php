@@ -496,6 +496,8 @@ class BootstrapBase
 
         $controller->setEventSystem($this->_resources['EventSystem']);
 
+        $controller->setRouter($this->_resources['Router']);
+
         $layout =  ($error) ? clone $this->_resources['Layout'] : $this->_resources['Layout'];
         $layout->setRouter($this->_resources['Router']);
         $controller->setLayout($layout);
