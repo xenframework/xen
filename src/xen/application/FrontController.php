@@ -194,7 +194,6 @@ class FrontController
      * _setErrorController
      *
      * Creates and prepares (calling the Bootstrap resolveController) the ErrorController injecting their dependencies
-     *
      */
     private function _setErrorController()
     {
@@ -218,7 +217,6 @@ class FrontController
      * _setController
      *
      * Creates and prepares (calling the Bootstrap resolveController) the Controller injecting their dependencies
-     *
      */
     private function _setController()
     {
