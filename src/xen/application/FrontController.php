@@ -16,32 +16,111 @@
 
 namespace xen\application;
 
+use bootstrap\Bootstrap;
 use controllers\ErrorController;
 use xen\eventSystem\Event;
+use xen\http\Request;
 use xen\http\Response;
 
+/**
+ * Class FrontController
+ *
+ * Selects the Controller and the Action to manage the Request. It also resolves the controller dependencies
+ *
+ * @package    xenframework
+ * @subpackage xen\application
+ * @author     Ismael Trascastro <itrascastro@xenframework.com>
+ * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
+ * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
+ * @link       https://github.com/xenframework/xen
+ * @since      Class available since Release 1.0.0
+ */
 class FrontController
 {
+    /**
+     * @const EXCEPTION_HANDLER_ACTION The ErrorController Action to be called when an exception takes place
+     */
     const EXCEPTION_HANDLER_ACTION = 'exceptionHandler';
 
+    /**
+     * @var \bootstrap\Bootstrap From here is used as a Service Locator
+     */
     private $_bootstrap;
+
+    /**
+     * @var Request The Request object from Bootstrap
+     */
     private $_request;
+
+    /**
+     * @var Router The Router
+     */
     private $_router;
+
+    /**
+     * @var object The controller who handles the Request. It is returned by the router
+     */
     private $_controller;
+
+    /**
+     * @var string The action who handles the Request. It is returned by the router
+     */
     private $_action;
+
+    /**
+     * @var string The output returned by calling the action in the controller
+     */
     private $_content;
+
+    /**
+     * @var object The controller who manages the Error
+     */
     private $_errorController;
+
+    /**
+     * @var Response The Response
+     */
     private $_response;
+
+    /**
+     * @var int The Status Code of the Response
+     */
     private $_statusCode;
+
+    /**
+     * @var EventSystem Used to raise events in the FrontController
+     */
     private $_eventSystem;
 
-    public function __construct($_bootstrap)
+    /**
+     * __construct
+     *
+     * Gets the Request from the Bootstrap
+     *
+     * @param Bootstrap $_bootstrap
+     */
+    public function __construct(Bootstrap $_bootstrap)
     {
-        $this->_bootstrap = $_bootstrap;
-        $this->_request = $_bootstrap->getResource('Request');
+        $this->_bootstrap   = $_bootstrap;
+        $this->_request     = $_bootstrap->getResource('Request');
         $this->_eventSystem = $_bootstrap->getResource('EventSystem');
     }
 
+    /**
+     * run
+     *
+     * Calls the Router to get the Controller and the Action to manage the Request
+     * Then tries to exec the Action and catch the exception if any error takes place
+     *
+     * Prepares the Controller and the Error Controller injection their dependencies
+     *
+     * Throws two events
+     *
+     *      1. Before calling the Action. So IoC can be done before calling any action in any controller
+     *      2. After calling the Action. So IoC can be done after calling any action in any controller
+     *
+     * @return mixed The Response
+     */
     public function run()
     {
         $url = $this->_request->get('url');
@@ -73,7 +152,7 @@ class FrontController
             $this->_exceptionHandler($e);
         }
 
-        if (!$this->_response->getStatusCode()) {
+        if (!$this->_response->getStatusCode()) { // It can be set from the action
 
             $this->_response->setStatusCode($this->_statusCode);
         }
@@ -83,12 +162,26 @@ class FrontController
         return $this->_response->send();
     }
 
+    /**
+     * _raiseEvent
+     *
+     * Raises an Event
+     *
+     * @param string $name The event name
+     */
     private function _raiseEvent($name)
     {
         $event = new Event($name, array('controller' => $this->_controller));
         $this->_eventSystem->raiseEvent($event);
     }
 
+    /**
+     * _exceptionHandler
+     *
+     * Manages the exception calling the ErrorController Action for this purpose: EXCEPTION_HANDLER_ACTION
+     *
+     * @param $e The exception
+     */
     private function _exceptionHandler($e)
     {
         $this->_errorController->setParams(array('e' => $e));
@@ -97,19 +190,36 @@ class FrontController
         $this->_statusCode = 500;
     }
 
+    /**
+     * _setErrorController
+     *
+     * Creates and prepares (calling the Bootstrap resolveController) the ErrorController injecting their dependencies
+     *
+     */
     private function _setErrorController()
     {
         $this->_errorController = new ErrorController();
         $action = FrontController::EXCEPTION_HANDLER_ACTION . 'Action';
+
+        $itIsTheErrorController = true;
+        $controllerName = 'error';
+
         $this->_bootstrap->resolveController(
             $this->_errorController,
-            'error',
+            $controllerName,
             FrontController::EXCEPTION_HANDLER_ACTION,
-            true
+            $itIsTheErrorController
         );
+
         set_exception_handler(array($this->_errorController, $action));
     }
 
+    /**
+     * _setController
+     *
+     * Creates and prepares (calling the Bootstrap resolveController) the Controller injecting their dependencies
+     *
+     */
     private function _setController()
     {
         $controller = 'controllers\\' . $this->_router->getController() . 'Controller';
