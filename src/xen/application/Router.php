@@ -51,7 +51,7 @@ class Router
     private $_parsedRoutes;
 
     /**
-     * @var Controller The controller for manage the Request
+     * @var mixed The controller for manage the Request
      */
     private $_controller;
 
@@ -152,6 +152,22 @@ class Router
         }
     }
 
+    /**
+     * toUrl
+     *
+     * Generates an url using the routes
+     *
+     * Checks all routes against $controller, $action, $params to find one that has
+     * the same controller, same action and matches the constraints
+     *
+     * If a route is found then the params are set to that route
+     *
+     * @param string    $controller
+     * @param string    $action
+     * @param array     $params
+     *
+     * @return bool|string The url associated to that controller, action and params. False if not route is found
+     */
     public function toUrl($controller, $action, $params = array())
     {
         foreach ($this->_routes as $route => $value) {
@@ -176,6 +192,17 @@ class Router
         return false;
     }
 
+    /**
+     * _setParamsToRoute
+     *
+     * Sets the params in a route
+     * searches for {$paramName} and replaces it by the value stored in $params for that key
+     *
+     * @param $route The matched route
+     * @param $params The params to be set in that route
+     *
+     * @return string
+     */
     private function _setParamsToRoute($route, $params)
     {
         foreach ($params as $key => $value) {
@@ -186,6 +213,17 @@ class Router
         return $route;
     }
 
+    /**
+     * _hasParams
+     *
+     * Checks if a param exists in a route and if this param matches the constraints defined in that route
+     *
+     * @param $route
+     * @param $params
+     * @param $constraints
+     *
+     * @return bool
+     */
     private function _hasParams($route, $params, $constraints)
     {
         foreach ($params as $key => $value) {
@@ -202,6 +240,18 @@ class Router
         return true;
     }
 
+    /**
+     * _parseRoutes
+     *
+     * Replaces the routes params by the regular expression defined in the constraints in that route
+     *
+     * To do that
+     *
+     *      - removes white spaces from the route
+     *      
+     *
+     * @return array
+     */
     private function _parseRoutes()
     {
         $routes = array();

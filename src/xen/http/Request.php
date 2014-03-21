@@ -42,13 +42,23 @@ class Request
         return new static($_GET, $_POST, $_FILES, $_SERVER, $_ENV);
     }
 
-    public function get($name)
+    public function get($name = '')
     {
+        if ($name == '') {
+
+            return $this->_get;
+        }
+
         return (isset($_GET[$name])) ? $_GET[$name] : null;
     }
 
-    public function post($name)
+    public function post($name = '')
     {
+        if ($name == '') {
+
+            return $this->_post;
+        }
+
         return (isset($_POST[$name])) ? $_POST[$name] : null;
     }
 
