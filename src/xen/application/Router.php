@@ -65,6 +65,15 @@ class Router
      */
     private $_params;
 
+    /**
+     * __construct
+     *
+     * Filters the url
+     * Load the routes from 'application/configs/routes.php'
+     * Parse the routes
+     *
+     * @param string $_url The url of the current Request
+     */
     public function __construct($_url)
     {
         $this->_cleanUrl($_url);
@@ -74,11 +83,30 @@ class Router
         $this->_params          = array();
     }
 
+    /**
+     * _cleanUrl
+     *
+     * Filters the url and add a start slash to the url
+     *
+     * @param string $url A route must start with a slash
+     */
     private function _cleanUrl($url)
     {
         $this->_url = ($url === null) ? '/' : '/' . filter_var($url, FILTER_SANITIZE_URL);
     }
 
+    /**
+     * route
+     *
+     * Try to match the url with one of the routes
+     *
+     *      if match        => check if it is allowed for the current role
+     *                          if not allowed  => Error controller , forbidden Action
+     *                          if allowed      => returns the controller and the action of the matched route
+     *      if not match    => Error controller, pageNotFound Action
+     *
+     * @param string $role The role to be used in ACL
+     */
     public function route($role)
     {
         $found = false;
