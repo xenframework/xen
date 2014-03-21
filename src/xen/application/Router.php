@@ -16,20 +16,62 @@
 
 namespace xen\application;
 
+/**
+ * Class Router
+ *
+ * The router has 3 functions:
+ *
+ *      1. Route            => returns the Controller, the Action and the Params for the current Request
+ *      2. ACL              => The router checks if a Role can access to the current route
+ *      3. Url generator    => The router generates urls from a given Controller, Action and Params
+ *
+ * @package    xenframework
+ * @subpackage xen\application
+ * @author     Ismael Trascastro <itrascastro@xenframework.com>
+ * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
+ * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
+ * @link       https://github.com/xenframework/xen
+ * @since      Class available since Release 1.0.0
+ */
 class Router
 {
+    /**
+     * @var string The url of the current Request
+     */
     private $_url;
+
+    /**
+     * @var array The defined routes in 'application/configs/routes.php'
+     */
     private $_routes;
+
+    /**
+     * @var array The parsed routes with constraints as a regular expressions
+     */
+    private $_parsedRoutes;
+
+    /**
+     * @var Controller The controller for manage the Request
+     */
     private $_controller;
+
+    /**
+     * @var string The action for manage the Request
+     */
     private $_action;
+
+    /**
+     * @var array The params of the current Request
+     */
     private $_params;
 
     public function __construct($_url)
     {
         $this->_cleanUrl($_url);
-        $this->_routes = require str_replace('/', DIRECTORY_SEPARATOR, 'application/configs/routes.php');
-        $this->_parseRoutes();
-        $this->_params = array();
+
+        $this->_routes          = require str_replace('/', DIRECTORY_SEPARATOR, 'application/configs/routes.php');
+        $this->_parsedRoutes    = $this->_parseRoutes();
+        $this->_params          = array();
     }
 
     private function _cleanUrl($url)
@@ -41,7 +83,7 @@ class Router
     {
         $found = false;
 
-        foreach ($this->_parseRoutes() as $route => $value) {
+        foreach ($this->_parsedRoutes as $route => $value) {
 
             if (preg_match('!^' . $route . '$!', $this->_url, $results) == 1) {
 
