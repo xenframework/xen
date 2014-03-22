@@ -245,60 +245,80 @@ class Router
      *
      * Replaces the routes params by the regular expression defined in the constraints in that route
      *
-     * To do that
+     * To do that, for each route:
      *
      *      - removes white spaces from the route
-     *      
+     *      - gets route param names
+     *      - for each param name, replaces it by its constraints
+     *      - sets the param names in the parsed route
+     *      - escapes '!' in the parsed route
      *
-     * @return array
+     *
+     * @return array The parsed routes
      */
     private function _parseRoutes()
     {
-        $routes = array();
+        $parsedRoutes = array();
 
         foreach ($this->_routes as $route => $routeValue) {
 
-            //remove white spaces
             $pattern = preg_replace('/\s+/', '', $route);
 
-            $paramPosEnd = 0;
-            $params = array();
+            $paramNames = $this->_getParamNamesFromRoute($route);
 
-            //we need a copy because we are modifying it in every iteration
-            $tmpPattern = $pattern;
-
-            while ($pos = strpos($pattern, '{', $paramPosEnd)) {
-
-                $paramPosEnd = strpos($pattern, '}', $pos);
-                $paramName = substr($pattern, $pos + 1, $paramPosEnd - $pos - 1);
+            foreach ($paramNames as $paramName) {
 
                 if (isset($routeValue['constraints'][$paramName])) {
 
                     $constraint = '(?P<' . $paramName . '>' . $routeValue['constraints'][$paramName] . ')';
                     $constraint = preg_replace('/\s+/', '', $constraint);
-                    $tmpPattern = str_replace('{' . $paramName . '}', $constraint, $tmpPattern);
+                    $pattern = str_replace('{' . $paramName . '}', $constraint, $pattern);
 
                 } else {
 
                     $constraint = '(?P<' . $paramName . '>\S+)';
-                    $tmpPattern = str_replace('{' . $paramName . '}', $constraint, $tmpPattern);
+                    $pattern = str_replace('{' . $paramName . '}', $constraint, $pattern);
                 }
 
-                $params[] = $paramName;
             }
 
             $parsedRoute = array(
                 'controller'    => $routeValue['controller'],
                 'action'        => $routeValue['action'],
-                'params'        => $params,
+                'params'        => $paramNames,
                 'allow'         => $routeValue['allow'],
             );
 
-            $pattern = str_replace('!', '\!', $tmpPattern);
-            $routes[$pattern] = $parsedRoute;
+            $pattern = str_replace('!', '\!', $pattern);
+            $parsedRoutes[$pattern] = $parsedRoute;
         }
 
-        return $routes;
+        return $parsedRoutes;
+    }
+
+    /**
+     * _getParamNamesFromRoute
+     *
+     * Returns the param names in a route
+     *
+     * Creates groups in the route for each param name
+     *
+     * Finally removes the first entry in the results array (it is the matched route, but not a param name)
+     *
+     * @param string $route To extract from the param names
+     *
+     * @return array The param names
+     */
+    private function _getParamNamesFromRoute($route)
+    {
+        $regex = str_replace('{', '{(', $route);
+        $regex = str_replace('}', ')}', $regex);
+
+        preg_match('!^' . $regex . '$!', $route, $results);
+
+        unset($results[0]);
+
+        return array_values($results);
     }
 
     /**
