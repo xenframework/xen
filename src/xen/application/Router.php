@@ -279,7 +279,6 @@ class Router
                     $constraint = '(?P<' . $paramName . '>\S+)';
                     $pattern = str_replace('{' . $paramName . '}', $constraint, $pattern);
                 }
-
             }
 
             $parsedRoute = array(
@@ -301,24 +300,16 @@ class Router
      *
      * Returns the param names in a route
      *
-     * Creates groups in the route for each param name
-     *
-     * Finally removes the first entry in the results array (it is the matched route, but not a param name)
-     *
      * @param string $route To extract from the param names
      *
      * @return array The param names
      */
     private function _getParamNamesFromRoute($route)
     {
-        $regex = str_replace('{', '{(', $route);
-        $regex = str_replace('}', ')}', $regex);
+        $param = '{(.+?)}';
+        preg_match_all('!' . $param . '!', $route, $results);
 
-        preg_match('!^' . $regex . '$!', $route, $results);
-
-        unset($results[0]);
-
-        return array_values($results);
+        return $results[1];
     }
 
     /**
