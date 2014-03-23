@@ -142,7 +142,7 @@ class Phtml
         foreach ($this->getPartials() as $partial) {
             foreach ($properties as $property) {
                 $propertyName = $property->getName();
-                $partial->$propertyName = $this->$propertyName;
+                if (!isset($partial->$propertyName)) $partial->$propertyName = $this->$propertyName;
             }
             $partial->setViewHelperBroker($this->_viewHelperBroker);
             $partial->setRouter($this->_router);
