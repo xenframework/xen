@@ -101,7 +101,7 @@ class Autoloader
      *
      * Directory structure has to be the same as the Namespace
      *
-     * @param $className The class to be instantiated
+     * @param string $className The class to be instantiated
      *
      * @return bool true if the file exists in the path otherwise false
      */

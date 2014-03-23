@@ -168,10 +168,10 @@ class BootstrapBase
     /**
      * addResource
      *
-     * Stores $resource in the container setted to $value
+     * Stores $resource in the container set to $value
      *
-     * @param $resource
-     * @param $value
+     * @param string $resource
+     * @param mixed $value
      */
     public function addResource($resource, $value)
     {
@@ -183,9 +183,9 @@ class BootstrapBase
      *
      * If the resource exists in the container then it is returned otherwise null
      *
-     * @param $resource identifier of the resource
+     * @param string $resource identifier of the resource
      *
-     * @return the resource
+     * @return mixed The resource
      */
     public function getResource($resource)
     {
@@ -217,7 +217,7 @@ class BootstrapBase
      */
     protected function _defaultApplicationConfig()
     {
-        return new Ini('application.ini', $this->getResource('AppEnv'));
+        return new Ini('application/configs/application.ini', $this->getResource('AppEnv'));
     }
 
     /**
@@ -229,7 +229,7 @@ class BootstrapBase
      */
     protected function _defaultConfig()
     {
-        $config = new Ini('config.ini', $this->getResource('AppEnv'));
+        $config = new Ini('application/configs/config.ini', $this->getResource('AppEnv'));
 
         return $config;
     }
@@ -267,7 +267,7 @@ class BootstrapBase
      *
      * The default layout path defined in configs/application.ini
      *
-     * @return string layout path
+     * @return string|null layout path
      */
     protected function _defaultLayoutPath()
     {
@@ -406,7 +406,7 @@ class BootstrapBase
      *      - An entry in Dependencies resource
      *      - An object that has not dependencies but it is needed as a dependency for another objects
      *
-     * @return object With all its dependencies resolved
+     * @return mixed The object with all its dependencies resolved
      */
     public function resolveDependencies($object)
     {
@@ -427,6 +427,8 @@ class BootstrapBase
             }
 
             $this->_resources[$className] = $object;
+
+            return 0;
 
         //it can already be a resource
         } else if (array_key_exists($object, $this->_resources)) {

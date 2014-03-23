@@ -19,6 +19,7 @@ namespace xen\application;
 use bootstrap\Bootstrap;
 use controllers\ErrorController;
 use xen\eventSystem\Event;
+use xen\eventSystem\EventSystem;
 use xen\http\Request;
 use xen\http\Response;
 
@@ -180,7 +181,7 @@ class FrontController
      *
      * Manages the exception calling the ErrorController Action for this purpose: EXCEPTION_HANDLER_ACTION
      *
-     * @param $e The exception
+     * @param \Exception $e The exception
      */
     private function _exceptionHandler($e)
     {

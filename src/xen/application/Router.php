@@ -198,8 +198,8 @@ class Router
      * Sets the params in a route
      * searches for {$paramName} and replaces it by the value stored in $params for that key
      *
-     * @param $route The matched route
-     * @param $params The params to be set in that route
+     * @param string    $route The matched route
+     * @param array     $params The params to be set in that route
      *
      * @return string
      */
@@ -218,9 +218,9 @@ class Router
      *
      * Checks if a param exists in a route and if this param matches the constraints defined in that route
      *
-     * @param $route
-     * @param $params
-     * @param $constraints
+     * @param string    $route
+     * @param array     $params
+     * @param array     $constraints
      *
      * @return bool
      */
