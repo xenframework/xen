@@ -203,25 +203,6 @@ class Ini extends Config
     }
 
     /**
-     * Converts a dotted key into an array
-     *
-     * 'x.y.z' => 3
-     *
-     * array(
-     *      'x' => array(
-     *              'y' => array(
-     *                      'z' => 3
-     *              )
-     *      )
-     * )
-     *
-     * @param $dottedKey
-     * @param $value
-     *
-     * @return array
-     */
-
-    /**
      * _dotToArray
      *
      * Converts a dotted property into an array recursively
