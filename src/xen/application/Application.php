@@ -20,6 +20,7 @@ use bootstrap\Bootstrap;
 use xen\application\bootstrap\Autoloader;
 use xen\http\Request;
 
+require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/application/Error.php');
 require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/application/bootstrap/Autoloader.php');
 
 /**
@@ -78,9 +79,16 @@ class Application
     private $_appEnv;
 
     /**
+     * @var Error;
+     */
+    private $_error;
+
+    /**
      * __construct
      *
-     * Define the application state
+     * Creates the Uncaught Exception handler to manage all the exceptions in the core
+     * Creates the Error
+     * Defines the application state
      * Call the autoloader
      * Creates the Request object from Globals
      *
@@ -88,6 +96,7 @@ class Application
      */
     public function __construct($_appEnv)
     {
+        $this->_error = new Error();
         $this->_appEnv = $_appEnv;
         $this->_autoLoader();
         $this->_request = Request::createFromGlobals();

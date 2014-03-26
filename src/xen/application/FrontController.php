@@ -136,8 +136,8 @@ class FrontController
         $this->_response = new Response();
         $this->_bootstrap->addResource('Response', $this->_response);
 
-        $this->_setErrorController();
         $this->_setController();
+        $this->_setErrorController();
 
         try {
 
@@ -195,6 +195,7 @@ class FrontController
      * _setErrorController
      *
      * Creates and prepares (calling the Bootstrap resolveController) the ErrorController injecting their dependencies
+     * Also set the new Exception Handler for manage all uncaught exceptions in the user application
      */
     private function _setErrorController()
     {

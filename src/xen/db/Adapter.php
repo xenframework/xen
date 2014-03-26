@@ -16,6 +16,19 @@
 
 namespace xen\db;
 
+/**
+ * Class Adapter
+ *
+ * Description
+ *
+ * @package    xenframework
+ * @subpackage xen\db
+ * @author     Ismael Trascastro <itrascastro@xenframework.com>
+ * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
+ * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
+ * @link       https://github.com/xenframework/xen
+ * @since      Class available since Release 1.0.0
+ */
 class Adapter extends \PDO
 {
     function __construct($dbConfig)
