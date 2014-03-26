@@ -16,6 +16,7 @@
 
 namespace xen\application\bootstrap;
 
+use xen\application\Error;
 use xen\config\Config;
 use xen\config\Ini;
 use xen\db\Adapter;
@@ -185,11 +186,19 @@ class BootstrapBase
      *
      * @param string $resource identifier of the resource
      *
+     * @throws \Exception
      * @return mixed The resource
      */
     public function getResource($resource)
     {
-        return (array_key_exists($resource, $this->_resources) ? $this->_resources[$resource] : null);
+        if ($this->exists($resource)) return $this->_resources[$resource];
+
+        throw new \Exception('Resource ' . $resource . ' does not exist in Bootstrap');
+    }
+
+    public function exists($resource)
+    {
+        return array_key_exists($resource, $this->_resources);
     }
 
     /**
@@ -372,6 +381,8 @@ class BootstrapBase
      *
      *
      * @param string $db The ID of the database
+     *
+     * @throws \Exception
      */
     protected function _dependencyDatabase($db)
     {
@@ -383,6 +394,9 @@ class BootstrapBase
                 'application/configs/databases.php'
             );
         }
+
+        if (!array_key_exists($db, $this->_resources['Databases']))
+            throw new \Exception('Database ' . $db . ' not found in "application/configs/databases.php"');
 
         $dbConfig = new Config($this->_resources['Databases'][$db]);
 

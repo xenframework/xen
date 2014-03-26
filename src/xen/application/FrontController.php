@@ -219,6 +219,9 @@ class FrontController
      * _setController
      *
      * Creates and prepares (calling the Bootstrap resolveController) the Controller injecting their dependencies
+     *
+     * Finally calls init method with all dependencies already injected (In the constructor dependencies are not still
+     * injected)
      */
     private function _setController()
     {
