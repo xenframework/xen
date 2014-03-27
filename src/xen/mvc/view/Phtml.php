@@ -25,6 +25,7 @@ namespace xen\mvc\view;
  *          A phtml file can have partials that are also phtml files
  *
  *          Only one restriction: partial 'content' is mandatory in the layout
+ *
  */
 class Phtml
 {
@@ -133,7 +134,6 @@ class Phtml
      * In Bootstrap we set ViewHelperBroker to the very first view, the layout
      * ViewHelperBroker will be passed to the child in the render() method
      * as the view variables of every Phtml => At this point no more variables can be added to this phtml
-     *
      */
     public function render()
     {

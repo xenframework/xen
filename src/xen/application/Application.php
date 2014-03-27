@@ -117,7 +117,7 @@ class Application
     /**
      * bootstrap
      *
-     * The Bootstrap object is created with 3 initial resources (appEnv, Autoloader, Request) and then we
+     * The Bootstrap object is created with 4 initial resources (appEnv, Autoloader, Request, Error) and then we
      * bootstrap the application
      */
     public function bootstrap()
@@ -126,6 +126,7 @@ class Application
         $this->_bootstrap->addResource('AppEnv', $this->_appEnv);
         $this->_bootstrap->addResource('AutoLoader', $this->_autoLoader);
         $this->_bootstrap->addResource('Request', $this->_request);
+        $this->_bootstrap->addResource('Error', $this->_error);
         $this->_bootstrap->bootstrap();
     }
 

@@ -48,6 +48,17 @@ class Error
     {
         $this->_response = new Response();
 
+        $this->setExceptionHandler();
+    }
+
+    /**
+     * setExceptionHandler
+     *
+     * Set the exception handler method
+     *
+     */
+    public function setExceptionHandler()
+    {
         set_exception_handler(array($this, 'coreExceptionHandler'));
     }
 
@@ -56,19 +67,21 @@ class Error
      *
      * This is the Exception Handler method
      * Creates an Error response with a 500 error code
+     * No output buffering needed because the response we are still in the core
      *
      * @param \Exception $e
+     *
+     * @return Response
      */
     public function coreExceptionHandler(\Exception $e)
     {
         $content    = $this->_errorView($e);
-        $statusCode  = 500;
+        $statusCode = 500;
 
         $this->_response->setStatusCode($statusCode);
         $this->_response->setContent($content);
 
-        echo $this->_response->send();
-        die();
+        return $this->_response->send();
     }
 
     private function _errorView(\Exception $e)

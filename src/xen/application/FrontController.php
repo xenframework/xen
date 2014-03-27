@@ -69,11 +69,6 @@ class FrontController
     private $_action;
 
     /**
-     * @var string The output returned by calling the action in the controller
-     */
-    private $_content;
-
-    /**
      * @var object The controller who manages the Error
      */
     private $_errorController;
@@ -104,6 +99,7 @@ class FrontController
     {
         $this->_bootstrap   = $_bootstrap;
         $this->_request     = $_bootstrap->getResource('Request');
+        $this->_router      = $_bootstrap->getResource('Router');
         $this->_eventSystem = $_bootstrap->getResource('EventSystem');
     }
 
@@ -113,7 +109,7 @@ class FrontController
      * Calls the Router to get the Controller and the Action to manage the Request
      * Then tries to exec the Action and catch the exception if any error takes place
      *
-     * Prepares the Controller and the Error Controller injection their dependencies
+     * Prepares the Controller and the Error Controller injecting their dependencies
      *
      * Throws two events
      *
@@ -127,8 +123,7 @@ class FrontController
         $url = $this->_request->get('url');
         $this->_request->setUrl($url);
 
-        $this->_router = new Router($url);
-        $this->_bootstrap->addResource('Router', $this->_router);
+        $this->_router->setUrl($url);
         $this->_router->route($this->_bootstrap->getResource('Role'));
 
         $this->_statusCode = ($this->_router->getAction() != 'PageNotFound') ? 200 : 404;
@@ -139,26 +134,29 @@ class FrontController
         $this->_setController();
         $this->_setErrorController();
 
+        ob_start();
+
         try {
 
             $this->_raiseEvent('PreDispatch');
 
             $action = $this->_action;
-            $this->_content = $this->_controller->$action();
+
+            $this->_controller->$action();
 
             $this->_raiseEvent('PostDispatch');
 
         } catch (\Exception $e) {
 
+            ob_end_clean();
+            ob_start();
+
             $this->_exceptionHandler($e);
         }
 
-        if (!$this->_response->getStatusCode()) { // It can be set from the action
+        if (!$this->_response->getStatusCode()) $this->_response->setStatusCode($this->_statusCode);
 
-            $this->_response->setStatusCode($this->_statusCode);
-        }
-
-        $this->_response->setContent($this->_content);
+        $this->_response->setContent(ob_get_clean());
 
         return $this->_response->send();
     }
@@ -187,7 +185,7 @@ class FrontController
     {
         $this->_errorController->setParams(array('e' => $e));
         $action = FrontController::EXCEPTION_HANDLER_ACTION . 'Action';
-        $this->_content = $this->_errorController->$action();
+        $this->_errorController->$action();
         $this->_statusCode = 500;
     }
 

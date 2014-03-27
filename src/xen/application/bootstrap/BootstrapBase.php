@@ -16,7 +16,7 @@
 
 namespace xen\application\bootstrap;
 
-use xen\application\Error;
+use xen\application\Router;
 use xen\config\Config;
 use xen\config\Ini;
 use xen\db\Adapter;
@@ -53,6 +53,7 @@ use xen\mvc\view\Phtml;
  *
  *      - Config                => 'application/configs/config.ini'
  *      - ApplicationConfig     => 'application/configs/application.ini'
+ *      - Router
  *      - ViewHelperBroker      => Factory for view helpers
  *      - ActionHelperBroker    => Factory for action helpers
  *      - LayoutPath            => Path to the default layout
@@ -65,8 +66,10 @@ use xen\mvc\view\Phtml;
  * Other resources stored in the Bootstrap are:
  *
  *      - Request
- *      - Router
  *      - Response
+ *      - AppEnv
+ *      - Autoloader
+ *      - Error                 => Manages core exceptions
  *
  * Other bootstrap actions like:
  *
@@ -241,6 +244,18 @@ class BootstrapBase
         $config = new Ini('application/configs/config.ini', $this->getResource('AppEnv'));
 
         return $config;
+    }
+
+    /**
+     * _defaultRouter
+     *
+     * Router resource
+     *
+     * @return Router
+     */
+    protected function _defaultRouter()
+    {
+        return new Router();
     }
 
     /**

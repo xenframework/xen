@@ -32,7 +32,9 @@ class Response
     {
         http_response_code($this->_statusCode);
 
-        return $this->_content;
+        echo $this->_content;
+
+        return $this;
     }
 
     /**

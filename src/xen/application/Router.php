@@ -71,13 +71,9 @@ class Router
      * Filters the url
      * Load the routes from 'application/configs/routes.php'
      * Parse the routes
-     *
-     * @param string $_url The url of the current Request
      */
-    public function __construct($_url)
+    public function __construct()
     {
-        $this->_cleanUrl($_url);
-
         $this->_routes          = require str_replace('/', DIRECTORY_SEPARATOR, 'application/configs/routes.php');
         $this->_parsedRoutes    = $this->_parseRoutes();
         $this->_params          = array();
@@ -93,6 +89,86 @@ class Router
     private function _cleanUrl($url)
     {
         $this->_url = ($url === null) ? '/' : '/' . filter_var($url, FILTER_SANITIZE_URL);
+    }
+
+    /**
+     * @param mixed $action
+     */
+    public function setAction($action)
+    {
+        $this->_action = $action;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAction()
+    {
+        return $this->_action;
+    }
+
+    /**
+     * @param mixed $controller
+     */
+    public function setController($controller)
+    {
+        $this->_controller = $controller;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getController()
+    {
+        return $this->_controller;
+    }
+
+    /**
+     * @param mixed $routes
+     */
+    public function setRoutes($routes)
+    {
+        $this->_routes = $routes;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRoutes()
+    {
+        return $this->_routes;
+    }
+
+    /**
+     * @param mixed $url
+     */
+    public function setUrl($url)
+    {
+        $this->_cleanUrl($url);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUrl()
+    {
+        return $this->_url;
+    }
+
+    /**
+     * @param array $params
+     */
+    public function setParams($params)
+    {
+        $this->_params = $params;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParams()
+    {
+        return $this->_params;
     }
 
     /**
@@ -162,11 +238,12 @@ class Router
      *
      * If a route is found then the params are set to that route
      *
-     * @param string    $controller
-     * @param string    $action
-     * @param array     $params
+     * @param string $controller
+     * @param string $action
+     * @param array  $params
      *
-     * @return bool|string The url associated to that controller, action and params. False if not route is found
+     * @throws \Exception
+     * @return string The url associated to that controller, action and params.
      */
     public function toUrl($controller, $action, $params = array())
     {
@@ -189,7 +266,11 @@ class Router
             }
         }
 
-        return false;
+        throw new \Exception('There is no route associated to the controller ' .
+            $controller . ', the action ' .
+            $action .
+            ' and the given params'
+        );
     }
 
     /**
@@ -254,6 +335,7 @@ class Router
      *      - escapes '!' in the parsed route
      *
      *
+     * @throws \Exception
      * @return array The parsed routes
      */
     private function _parseRoutes()
@@ -280,6 +362,13 @@ class Router
                     $pattern = str_replace('{' . $paramName . '}', $constraint, $pattern);
                 }
             }
+
+            if (!isset($routeValue['controller']) ||
+                !isset($routeValue['action']) ||
+                !isset($routeValue['allow'])
+            ) throw new \Exception($route .
+                ' Malformed route. Be sure you set the controller,
+                the action and the allow sections in your routes definition');
 
             $parsedRoute = array(
                 'controller'    => $routeValue['controller'],
@@ -311,85 +400,4 @@ class Router
 
         return $results[1];
     }
-
-    /**
-     * @param mixed $action
-     */
-    public function setAction($action)
-    {
-        $this->_action = $action;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getAction()
-    {
-        return $this->_action;
-    }
-
-    /**
-     * @param mixed $controller
-     */
-    public function setController($controller)
-    {
-        $this->_controller = $controller;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getController()
-    {
-        return $this->_controller;
-    }
-
-    /**
-     * @param mixed $routes
-     */
-    public function setRoutes($routes)
-    {
-        $this->_routes = $routes;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getRoutes()
-    {
-        return $this->_routes;
-    }
-
-    /**
-     * @param mixed $url
-     */
-    public function setUrl($url)
-    {
-        $this->_url = $url;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getUrl()
-    {
-        return $this->_url;
-    }
-
-    /**
-     * @param array $params
-     */
-    public function setParams($params)
-    {
-        $this->_params = $params;
-    }
-
-    /**
-     * @return array
-     */
-    public function getParams()
-    {
-        return $this->_params;
-    }
-
 }
