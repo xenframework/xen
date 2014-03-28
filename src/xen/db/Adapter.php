@@ -19,7 +19,7 @@ namespace xen\db;
 /**
  * Class Adapter
  *
- * Description
+ * Creates a PDO object depending on the given driver in the dbConfig
  *
  * @package    xenframework
  * @subpackage xen\db
@@ -31,54 +31,80 @@ namespace xen\db;
  */
 class Adapter extends \PDO
 {
+    /**
+     * __construct
+     *
+     * Creates a PDO object depending on the given driver in the dbConfig
+     *
+     * @param $dbConfig
+     *
+     * @throws \Exception
+     */
     function __construct($dbConfig)
     {
         switch (strtolower($dbConfig->driver)) {
+
             case 'mysql': //MySQL
+
                 $dsn = 'mysql:host=' . $dbConfig->hostname;
-                if (isset($dbConfig->port)) {
-                    $dsn .= ';port=' . $dbConfig->port;
-                }
+
+                if (isset($dbConfig->port)) $dsn .= ';port=' . $dbConfig->port;
+
                 $dsn .= ';dbname=' . $dbConfig->dbname;
-                if (isset($dbConfig->charset)) {
-                    $dsn .= ';charset=' . $dbConfig->charset;
-                }
+
+                if (isset($dbConfig->charset)) $dsn .= ';charset=' . $dbConfig->charset;
+
                 try {
+
                     parent::__construct($dsn, $dbConfig->username, $dbConfig->password);
+
                 } catch (\Exception $e) {
-                    echo $e->getMessage();
-                    die();
+
+                    throw new \Exception($e->getMessage());
                 }
+
                 break;
+
             case 'pgsql': //PostgreSQL
+
                 $dsn = 'pgsql:host=' . $dbConfig->hostname;
-                if (isset($dbConfig->port)) {
-                    $dsn .= ';port=' . $dbConfig->port;
-                }
+
+                if (isset($dbConfig->port)) $dsn .= ';port=' . $dbConfig->port;
+
                 $dsn .= ';dbname=' . $dbConfig->dbname;
                 $dsn .= ';user=' . $dbConfig->username;
                 $dsn .= ';password=' . $dbConfig->password;
+
                 try {
+
                     parent::__construct($dsn);
+
                 } catch (\Exception $e) {
-                    echo $e->getMessage();
-                    die();
+
+                    throw new \Exception($e->getMessage());
                 }
+
                 break;
+
             case 'dblib': //MS Sql
+
                 $dsn = 'dblib:host=' . $dbConfig->hostname;
-                if (isset($dbConfig->port)) {
-                    $dsn .= ',' . $dbConfig->port;
-                }
+
+                if (isset($dbConfig->port)) $dsn .= ',' . $dbConfig->port;
+
                 $dsn .= ';Database=' . $dbConfig->dbname;
                 $dsn .= ',' . $dbConfig->username;
                 $dsn .= ',' . $dbConfig->password;
+
                 try {
+
                     parent::__construct($dsn);
+
                 } catch (\Exception $e) {
-                    echo $e->getMessage();
-                    die();
+
+                    throw new \Exception($e->getMessage());
                 }
+
                 break;
         }
     }
