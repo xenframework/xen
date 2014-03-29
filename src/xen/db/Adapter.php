@@ -38,7 +38,7 @@ class Adapter extends \PDO
      *
      * @param $dbConfig
      *
-     * @throws \Exception
+     * @throws \Exception From \PDO __construct
      */
     function __construct($dbConfig)
     {
@@ -54,14 +54,7 @@ class Adapter extends \PDO
 
                 if (isset($dbConfig->charset)) $dsn .= ';charset=' . $dbConfig->charset;
 
-                try {
-
-                    parent::__construct($dsn, $dbConfig->username, $dbConfig->password);
-
-                } catch (\Exception $e) {
-
-                    throw new \Exception($e->getMessage());
-                }
+                parent::__construct($dsn, $dbConfig->username, $dbConfig->password);
 
                 break;
 
@@ -75,14 +68,7 @@ class Adapter extends \PDO
                 $dsn .= ';user=' . $dbConfig->username;
                 $dsn .= ';password=' . $dbConfig->password;
 
-                try {
-
-                    parent::__construct($dsn);
-
-                } catch (\Exception $e) {
-
-                    throw new \Exception($e->getMessage());
-                }
+                parent::__construct($dsn);
 
                 break;
 
@@ -96,14 +82,7 @@ class Adapter extends \PDO
                 $dsn .= ',' . $dbConfig->username;
                 $dsn .= ',' . $dbConfig->password;
 
-                try {
-
-                    parent::__construct($dsn);
-
-                } catch (\Exception $e) {
-
-                    throw new \Exception($e->getMessage());
-                }
+                parent::__construct($dsn);
 
                 break;
         }

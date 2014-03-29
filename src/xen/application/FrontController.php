@@ -18,7 +18,6 @@ namespace xen\application;
 
 use bootstrap\Bootstrap;
 use controllers\ErrorController;
-use xen\eventSystem\Event;
 use xen\eventSystem\EventSystem;
 use xen\http\Request;
 use xen\http\Response;
@@ -138,13 +137,13 @@ class FrontController
 
         try {
 
-            $this->_raiseEvent('PreDispatch');
+            $this->_eventSystem->raiseEvent('PreDispatch', array('controller' => $this->_controller));
 
             $action = $this->_action;
 
             $this->_controller->$action();
 
-            $this->_raiseEvent('PostDispatch');
+            $this->_eventSystem->raiseEvent('PostDispatch', array('controller' => $this->_controller));
 
         } catch (\Exception $e) {
 
@@ -159,19 +158,6 @@ class FrontController
         $this->_response->setContent(ob_get_clean());
 
         return $this->_response->send();
-    }
-
-    /**
-     * _raiseEvent
-     *
-     * Raises an Event
-     *
-     * @param string $name The event name
-     */
-    private function _raiseEvent($name)
-    {
-        $event = new Event($name, array('controller' => $this->_controller));
-        $this->_eventSystem->raiseEvent($event);
     }
 
     /**

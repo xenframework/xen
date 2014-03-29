@@ -19,30 +19,70 @@ namespace xen\eventSystem;
 /**
  * Class Handler
  *
- * @package xen\eventSystem
- * @author  Ismael Trascastro itrascastro@xenframework.com
+ * The object who handles an Event
  *
- *          A Handler object is the VB handler function concept
- *          a function can handle events (>=1)1
+ * They are defined in 'application/eventHandlers' directory
+ * All of them extends this class (they have to define the 'handle' method)
+ *
+ * A Handler can handle more than one events
+ *
+ * @package    xenframework
+ * @subpackage xen\eventSystem
+ * @author     Ismael Trascastro <itrascastro@xenframework.com>
+ * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
+ * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
+ * @link       https://github.com/xenframework/xen
+ * @since      Class available since Release 1.0.0
  */
 abstract class Handler
 {
+    /**
+     * @var array The events that are handled by this handler
+     */
     private $_events;
 
-    public function __construct(array $_events = array())
+    /**
+     * __construct
+     *
+     * @param array $_events
+     */
+    public function __construct($_events = array())
     {
         $this->_events = $_events;
     }
 
-    public function addHandles(array $events)
+    /**
+     * addHandles
+     *
+     * Add events to be handled by this handler
+     *
+     * @param array $events
+     */
+    public function addHandles($events)
     {
         $this->_events = array_merge($this->_events, $events);
     }
 
+    /**
+     * handles
+     *
+     * Used to know if this handler handle an event
+     *
+     * @param $event
+     *
+     * @return bool
+     */
     public function handles($event)
     {
         return in_array($event, $this->_events);
     }
 
+    /**
+     * handle
+     *
+     * This method contains the code who handles the event
+     *
+     * @param $params
+     */
     public abstract function handle($params);
 }

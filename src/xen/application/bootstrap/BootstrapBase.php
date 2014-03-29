@@ -359,11 +359,11 @@ class BootstrapBase
 
         $eventSystem = $this->getResource('EventSystem');
 
-        foreach ($handlers as $handler) {
+        foreach ($handlers as $handler => $events) {
 
-            $handlerName = 'eventHandlers\\' . $handler['handler'];
-            $handlerInstance = new $handlerName();
-            $handlerInstance->addHandles($handler['events']);
+            $handlerClassName = 'eventHandlers\\' . $handler;
+            $handlerInstance = new $handlerClassName();
+            $handlerInstance->addHandles($events);
             $eventSystem->addHandler($handlerInstance);
         }
     }
