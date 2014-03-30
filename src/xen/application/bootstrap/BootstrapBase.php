@@ -290,19 +290,17 @@ class BootstrapBase
      * _defaultLayoutPath
      *
      * The default layout path defined in configs/application.ini
+     * If not defined then it will be set to 'application/layouts/default'
      *
-     * @return string|null layout path
+     * @return string layout path
      */
     protected function _defaultLayoutPath()
     {
         $applicationConfig = $this->getResource('ApplicationConfig');
 
-        if (isset($applicationConfig->defaultLayoutPath)) {
-
-            return str_replace('/', DIRECTORY_SEPARATOR, $applicationConfig->defaultLayoutPath);
-        }
-
-        return null;
+        return (isset($applicationConfig->defaultLayoutPath)) ?
+            str_replace('/', DIRECTORY_SEPARATOR, $applicationConfig->defaultLayoutPath) :
+            str_replace('/', DIRECTORY_SEPARATOR, 'application/layouts/default');
     }
 
     /**

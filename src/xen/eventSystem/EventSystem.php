@@ -19,16 +19,6 @@ namespace xen\eventSystem;
 /**
  * Class EventSystem
  *
- * @package xen\eventSystem
- * @author  Ismael Trascastro itrascastro@xenframework.com
- *
- *          Similar to VB an event handler can be a function with the same name as the event
- *          or can be handle by another function declared with handles clause
- */
-
-/**
- * Class EventSystem
- *
  * Similar to Visual Basic .NET an event handler can be:
  *
  *      - a function with the same name as the event ('application/eventHandlers')
@@ -80,6 +70,7 @@ class EventSystem
 
             if ($handler->handles($event)) $handler->handle($params);
         }
+
         if (file_exists('application/eventHandlers/' . $event . '.php')) {
 
             $handlerClassName = 'eventHandlers\\' . $event;
