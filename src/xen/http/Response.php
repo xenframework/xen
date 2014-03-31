@@ -16,18 +16,53 @@
 
 namespace xen\http;
 
-
+/**
+ * Class Response
+ *
+ * The Response
+ *
+ * @package    xenframework
+ * @subpackage xen\http
+ * @author     Ismael Trascastro <itrascastro@xenframework.com>
+ * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
+ * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
+ * @link       https://github.com/xenframework/xen
+ * @since      Class available since Release 1.0.0
+ */
 class Response 
 {
+    /**
+     * @var string The Response headers
+     */
     private $_headers;
+
+    /**
+     * @var string The Response content
+     */
     private $_content;
+
+    /**
+     * @var int The Response status code
+     */
     private $_statusCode;
 
+    /**
+     * __construct
+     *
+     * The status code is not set at this point
+     */
     public function __construct()
     {
         $this->_statusCode = false;
     }
 
+    /**
+     * send
+     *
+     * Set the Response status code and echoes the Response content
+     *
+     * @return $this The Response
+     */
     public function send()
     {
         http_response_code($this->_statusCode);
@@ -38,7 +73,9 @@ class Response
     }
 
     /**
-     * @param mixed $content
+     * setContent
+     *
+     * @param string $content
      */
     public function setContent($content)
     {
@@ -46,7 +83,9 @@ class Response
     }
 
     /**
-     * @return mixed
+     * getContent
+     *
+     * @return string
      */
     public function getContent()
     {
@@ -54,7 +93,9 @@ class Response
     }
 
     /**
-     * @param mixed $headers
+     * setHeaders
+     *
+     * @param string $headers
      */
     public function setHeaders($headers)
     {
@@ -63,7 +104,9 @@ class Response
     }
 
     /**
-     * @return mixed
+     * getHeaders
+     *
+     * @return string
      */
     public function getHeaders()
     {
@@ -71,7 +114,9 @@ class Response
     }
 
     /**
-     * @param mixed $statusCode
+     * setStatusCode
+     *
+     * @param int $statusCode
      */
     public function setStatusCode($statusCode)
     {
@@ -79,7 +124,9 @@ class Response
     }
 
     /**
-     * @return mixed
+     * getStatusCode
+     *
+     * @return bool|int False if it is not set
      */
     public function getStatusCode()
     {

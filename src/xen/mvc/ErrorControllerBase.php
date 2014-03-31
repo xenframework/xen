@@ -21,17 +21,7 @@ use xen\mvc\view\Phtml;
 
 abstract class ErrorControllerBase extends Controller
 {
-    public function init()
-    {
-
-    }
-    
-    public function indexAction()
-    {
-    }
-
     abstract function exceptionHandlerAction();
     abstract function pageNotFoundAction();
     abstract function forbiddenAction();
-
 }

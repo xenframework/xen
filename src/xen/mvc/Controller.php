@@ -16,7 +16,7 @@
 
 namespace xen\mvc;
 
-abstract class Controller
+class Controller
 {
     protected $_view;
     protected $_layout;
@@ -34,8 +34,9 @@ abstract class Controller
     {
     }
 
-    public abstract function init();
-    public abstract function indexAction();
+    public function init()
+    {
+    }
 
     /**
      * @param mixed $appEnv
