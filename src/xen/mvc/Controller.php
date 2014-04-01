@@ -16,30 +16,124 @@
 
 namespace xen\mvc;
 
+use xen\mvc\view\Phtml;
+use xen\http\Request;
+use xen\http\Response;
+use xen\http\Session;
+use xen\config\Config;
+use xen\mvc\helpers\ActionHelperBroker;
+use xen\eventSystem\EventSystem;
+use xen\application\Router;
+
+/**
+ * Class Controller
+ *
+ * Every controller in the application will extend this class
+ *
+ * The resources available in a controller are:
+ *
+ *      - View
+ *      - Layout
+ *      - Params (For the current action)
+ *      - Request
+ *      - Response
+ *      - Session
+ *      - Config (The application configure settings)
+ *      - ActionHelperBroker
+ *      - EventSystem
+ *      - AppEnv
+ *      - Router
+ *
+ * @package    xenframework
+ * @subpackage xen\mvc
+ * @author     Ismael Trascastro <itrascastro@xenframework.com>
+ * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
+ * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
+ * @link       https://github.com/xenframework/xen
+ * @since      Class available since Release 1.0.0
+ */
 class Controller
 {
+    /**
+     * @var Phtml
+     */
     protected $_view;
+
+    /**
+     * @var Phtml
+     */
     protected $_layout;
+
+    /**
+     * @var array
+     */
     protected $_params;
+
+    /**
+     * @var Request
+     */
     protected $_request;
+
+    /**
+     * @var Response
+     */
     protected $_response;
+
+    /**
+     * @var Session
+     */
     protected $_session;
+
+    /**
+     * @var Config
+     */
     protected $_config;
+
+    /**
+     * @var ActionHelperBroker;
+     */
     protected $_actionHelperBroker;
+
+    /**
+     * @var EventSystem
+     */
     protected $_eventSystem;
+
+    /**
+     * @var string
+     */
     protected $_appEnv;
+
+    /**
+     * @var Router
+     */
     protected $_router;
 
+    /**
+     * __construct
+     *
+     * Can be override
+     */
     public function __construct()
     {
     }
 
+    /**
+     * init
+     *
+     * Can be override to do staff before any action is called
+     *
+     */
     public function init()
     {
     }
 
     /**
-     * @param mixed $appEnv
+     * setAppEnv
+     *
+     * The Application Environment state
+     *
+     * @param string $appEnv
      */
     public function setAppEnv($appEnv)
     {
@@ -47,7 +141,9 @@ class Controller
     }
 
     /**
-     * @return mixed
+     * getAppEnv
+     *
+     * @return string
      */
     public function getAppEnv()
     {
@@ -55,15 +151,19 @@ class Controller
     }
 
     /**
-     * @param mixed $eventSystem
+     * setEventSystem
+     *
+     * @param EventSystem $eventSystem
      */
-    public function setEventSystem($eventSystem)
+    public function setEventSystem(EventSystem $eventSystem)
     {
         $this->_eventSystem = $eventSystem;
     }
 
     /**
-     * @return mixed
+     * getEventSystem
+     *
+     * @return EventSystem
      */
     public function getEventSystem()
     {
@@ -71,15 +171,19 @@ class Controller
     }
 
     /**
-     * @param \xen\mvc\helpers\HelperBroker $actionHelperBroker
+     * setActionHelperBroker
+     *
+     * @param ActionHelperBroker $actionHelperBroker
      */
-    public function setActionHelperBroker($actionHelperBroker)
+    public function setActionHelperBroker(ActionHelperBroker $actionHelperBroker)
     {
         $this->_actionHelperBroker = $actionHelperBroker;
     }
 
     /**
-     * @return \xen\mvc\helpers\HelperBroker
+     * getActionHelperBroker
+     *
+     * @return ActionHelperBroker
      */
     public function getActionHelperBroker()
     {
@@ -87,15 +191,19 @@ class Controller
     }
 
     /**
-     * @param mixed $config
+     * setConfig
+     *
+     * @param Config $config
      */
-    public function setConfig($config)
+    public function setConfig(Config $config)
     {
         $this->_config = $config;
     }
 
     /**
-     * @return mixed
+     * getConfig
+     *
+     * @return Config
      */
     public function getConfig()
     {
@@ -103,15 +211,19 @@ class Controller
     }
 
     /**
-     * @param \xen\mvc\view\Phtml $layout
+     * setLayout
+     *
+     * @param Phtml $layout
      */
-    public function setLayout($layout)
+    public function setLayout(Phtml $layout)
     {
         $this->_layout = $layout;
     }
 
     /**
-     * @return \xen\mvc\view\Phtml
+     * getLayout
+     *
+     * @return Phtml
      */
     public function getLayout()
     {
@@ -119,9 +231,9 @@ class Controller
     }
 
     /**
-     * @param $_params
+     * setParams
      *
-     * @internal param mixed $params
+     * @param array $_params
      */
     public function setParams($_params)
     {
@@ -129,39 +241,48 @@ class Controller
     }
 
     /**
-     * @return mixed
+     * getParams
+     *
+     * @return array
      */
     public function getParams()
     {
         return $this->_params;
     }
 
+    /**
+     * getParam
+     *
+     * @param string $key
+     *
+     * @throws \Exception
+     * @return mixed
+     */
     public function getParam($key)
     {
-        foreach ($this->_params as $keyword => $value)
-        {
-            if ($keyword == $key) {
-                return $value;
-            }
-        }
-        return null;
+        if (array_key_exists($key, $this->_params)) return $this->_params[$key];
+
+        throw new \Exception('The param ' . $key . ' does not exist');
     }
 
     /**
-     * @param mixed $view
+     * setView
+     *
+     * Set the View and add it as a partial to the Layout
+     *
+     * @param Phtml $_view
      */
-    public function setView($_view)
+    public function setView(Phtml $_view)
     {
         $this->_view = $_view;
-        $this->_layout->addPartials(
-            array(
-                'content' => $this->_view,
-            )
-        );
+
+        $this->_layout->addPartial('content', $this->_view);
     }
 
     /**
-     * @return mixed
+     * getView
+     *
+     * @return Phtml
      */
     public function getView()
     {
@@ -169,15 +290,19 @@ class Controller
     }
 
     /**
-     * @param mixed $request
+     * setRequest
+     *
+     * @param Request $request
      */
-    public function setRequest($request)
+    public function setRequest(Request $request)
     {
         $this->_request = $request;
     }
 
     /**
-     * @return mixed
+     * getRequest
+     *
+     * @return Request
      */
     public function getRequest()
     {
@@ -185,15 +310,19 @@ class Controller
     }
 
     /**
-     * @param mixed $response
+     * setResponse
+     *
+     * @param Response $response
      */
-    public function setResponse($response)
+    public function setResponse(Response $response)
     {
         $this->_response = $response;
     }
 
     /**
-     * @return mixed
+     * getResponse
+     *
+     * @return Response
      */
     public function getResponse()
     {
@@ -201,15 +330,19 @@ class Controller
     }
 
     /**
-     * @param mixed $session
+     * setSession
+     *
+     * @param Session $session
      */
-    public function setSession($session)
+    public function setSession(Session $session)
     {
         $this->_session = $session;
     }
 
     /**
-     * @return mixed
+     * getSession
+     *
+     * @return Session
      */
     public function getSession()
     {
@@ -217,15 +350,19 @@ class Controller
     }
 
     /**
-     * @param mixed $router
+     * setRouter
+     *
+     * @param Router $router
      */
-    public function setRouter($router)
+    public function setRouter(Router $router)
     {
         $this->_router = $router;
     }
 
     /**
-     * @return mixed
+     * getRouter
+     *
+     * @return Router
      */
     public function getRouter()
     {
@@ -233,20 +370,41 @@ class Controller
     }
 
     /**
-     * We extend layout properties to partials
+     * render
+     *
+     * Calls layout render method
      */
     public function render()
     {
-        $this->_layout->render();
+        return $this->_layout->render();
     }
 
-    protected function _redirect($controller, $action)
+    /**
+     * _redirect
+     *
+     * Creates a new petition
+     *
+     * @param string    $controller
+     * @param string    $action
+     * @param array     $params
+     */
+    protected function _redirect($controller, $action, $params = array())
     {
-        $url = $this->_router->toUrl($controller, $action);
+        $url = $this->_router->toUrl($controller, $action, $params);
         header('location:' . $url);
         exit;
     }
 
+    /**
+     * _forward
+     *
+     * Calls to another action in the same controller
+     * Updates the view pointing the new action to enable the new action execution
+     *
+     * @param string $action
+     *
+     * @return mixed
+     */
     protected function _forward($action)
     {
         $controller = $this->_request->getController();

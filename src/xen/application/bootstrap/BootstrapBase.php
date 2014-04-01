@@ -538,10 +538,13 @@ class BootstrapBase
         $view = new Phtml($viewPath . DIRECTORY_SEPARATOR . $action . '.phtml');
         $controller->setView($view);
 
-        $this->_resources['Request']->setController(lcfirst($controllerName));
-        $this->_resources['Request']->setAction($action);
-        $this->_resources['Request']->setParams($this->_resources['Router']->getParams());
-        $controller->setRequest($this->_resources['Request']);
+        if (!$error) {
+
+            $this->_resources['Request']->setController(lcfirst($controllerName));
+            $this->_resources['Request']->setAction($action);
+            $this->_resources['Request']->setParams($this->_resources['Router']->getParams());
+            $controller->setRequest($this->_resources['Request']);
+        }
 
         $controller->setSession($this->_resources['Session']);
         $controller->setResponse($this->_resources['Response']);

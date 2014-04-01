@@ -19,9 +19,45 @@ namespace xen\mvc;
 use xen\application\Application;
 use xen\mvc\view\Phtml;
 
+/**
+ * Class ErrorControllerBase
+ *
+ * Defines the methods for the ErrorController
+ *
+ * @package    xenframework
+ * @subpackage xen\mvc
+ * @author     Ismael Trascastro <itrascastro@xenframework.com>
+ * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
+ * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
+ * @link       https://github.com/xenframework/xen
+ * @since      Class available since Release 1.0.0
+ */
 abstract class ErrorControllerBase extends Controller
 {
+    /**
+     * exceptionHandlerAction
+     *
+     * Used when a new Exception is raised
+     *
+     * @return mixed
+     */
     abstract function exceptionHandlerAction();
+
+    /**
+     * pageNotFoundAction
+     *
+     * Used in a 404 Page Not Found error
+     *
+     * @return mixed
+     */
     abstract function pageNotFoundAction();
+
+    /**
+     * forbiddenAction
+     *
+     * Used by the ACL when trying to access to a restricted area
+     *
+     * @return mixed
+     */
     abstract function forbiddenAction();
 }
