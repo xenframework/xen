@@ -22,7 +22,8 @@ use xen\config\Ini;
 use xen\db\Adapter;
 use xen\eventSystem\EventSystem;
 use xen\http\Session;
-use xen\mvc\helpers\HelperBroker;
+use xen\mvc\helpers\ActionHelperBroker;
+use xen\mvc\helpers\ViewHelperBroker;
 use xen\mvc\view\Phtml;
 
 /**
@@ -241,9 +242,7 @@ class BootstrapBase
      */
     protected function _defaultConfig()
     {
-        $config = new Ini('application/configs/config.ini', $this->getResource('AppEnv'));
-
-        return $config;
+        return new Ini('application/configs/config.ini', $this->getResource('AppEnv'));
     }
 
     /**
@@ -261,29 +260,29 @@ class BootstrapBase
     /**
      * _defaultViewHelperBroker
      *
-     * HelperBroker resource
+     * ViewHelperBroker resource
      *
      * It is a factory for View Helpers
      *
-     * @return HelperBroker
+     * @return ViewHelperBroker
      */
     protected function _defaultViewHelperBroker()
     {
-        return new HelperBroker(HelperBroker::VIEW_HELPER);
+        return new ViewHelperBroker();
     }
 
     /**
      * _defaultActionHelperBroker
      *
-     * ActionHelperBroker
+     * ActionHelperBroker resource
      *
      * It is a factory for Action Helpers
      *
-     * @return HelperBroker
+     * @return ActionHelperBroker
      */
     protected function _defaultActionHelperBroker()
     {
-        return new HelperBroker(HelperBroker::ACTION_HELPER);
+        return new ActionHelperBroker();
     }
 
     /**
@@ -506,7 +505,7 @@ class BootstrapBase
      *      - EventSystem
      *      - Router
      *      - Layout
-     *      - Router (in the Layout)
+     *      - Router
      *      - ActionHelperBroker
      *      - Config
      *      - Params (Controller params from the Router)
@@ -523,9 +522,7 @@ class BootstrapBase
     public function resolveController($controller, $controllerName, $action, $error = false)
     {
         $controller->setAppEnv($this->getResource('AppEnv'));
-
         $controller->setEventSystem($this->_resources['EventSystem']);
-
         $controller->setRouter($this->_resources['Router']);
 
         $layout =  ($error) ? clone $this->_resources['Layout'] : $this->_resources['Layout'];
@@ -533,9 +530,7 @@ class BootstrapBase
         $controller->setLayout($layout);
 
         $controller->setActionHelperBroker($this->_resources['ActionHelperBroker']);
-
         $controller->setConfig($this->_resources['Config']);
-
         $controller->setParams($this->_resources['Router']->getParams());
 
         $viewPath = str_replace('/', DIRECTORY_SEPARATOR,
@@ -549,7 +544,6 @@ class BootstrapBase
         $controller->setRequest($this->_resources['Request']);
 
         $controller->setSession($this->_resources['Session']);
-
         $controller->setResponse($this->_resources['Response']);
 
         $this->resolveDependencies($controller);

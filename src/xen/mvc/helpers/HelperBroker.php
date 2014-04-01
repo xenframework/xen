@@ -19,66 +19,96 @@ namespace xen\mvc\helpers;
 /**
  * Class HelperBroker
  *
- * @package xen\mvc\helpers
- * @author  Ismael Trascastro itrascastro@xenframework.com
+ * A Helpers factory
  *
- * Used in View Files to create instances of view Helpers and then call them (We do not have to create
- * instances in View Files. That is the reason to be)
- *
+ * @package    xenframework
+ * @subpackage xen\mvc\helpers
+ * @author     Ismael Trascastro <itrascastro@xenframework.com>
+ * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
+ * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
+ * @link       https://github.com/xenframework/xen
+ * @since      Class available since Release 1.0.0
  */
 class HelperBroker
 {
-    const ACTION_HELPER = 0;
-    const VIEW_HELPER = 1;
+    /**
+     * @var string The Helper Namespace in the xen library
+     */
+    protected $_libNamespace;
 
-    private $_type;
-    private $_libNamespace;
-    private $_appNamespace;
-    private $_libPath;
-    private $_appPath;
+    /**
+     * @var string The Helper Namespace in the application (IoC)
+     */
+    protected $_appNamespace;
 
-    public function __construct($_type)
-    {
-        if ($_type == self::ACTION_HELPER) {
-            $this->_type = $_type;
-            $this->_libNamespace = 'xen\\mvc\\helpers\\actionHelpers\\';
-            $this->_appNamespace = 'controllers\\helpers\\';
-            $this->_libPath      = str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/mvc/helpers/actionHelpers/');
-            $this->_appPath      = str_replace('/', DIRECTORY_SEPARATOR, 'application/controllers/helpers/');
-        } else if ($_type == self::VIEW_HELPER) {
-            $this->_type = $_type;
-            $this->_libNamespace = 'xen\\mvc\\helpers\\viewHelpers\\';
-            $this->_appNamespace = 'views\\helpers\\';
-            $this->_libPath      = str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/mvc/helpers/viewHelpers/');
-            $this->_appPath      = str_replace('/', DIRECTORY_SEPARATOR, 'application/views/helpers/');
-        } else {
-            $this->_type = null;
-        }
-    }
+    /**
+     * @var string The Helper path in the xen library
+     */
+    protected $_libPath;
 
+    /**
+     * @var string The Helper path in the application (IoC)
+     */
+    protected $_appPath;
+
+    /**
+     * getHelper
+     *
+     * The Factory
+     * Looks for a helper in the xen library or in the application path
+     *
+     * @param string $helper
+     * @param array  $params
+     *
+     * @throws \Exception
+     * @return mixed The Helper
+     */
     public function getHelper($helper, $params=array())
     {
-        if ($this->isLibraryHelper($helper)) {
-            $className = $this->_libNamespace . $helper;
-        } else if ($this->isApplicationHelper($helper)) {
-            $className = $this->_appNamespace . $helper;
-        } else $className = null;
+        if ($this->isLibraryHelper($helper)) $className = $this->_libNamespace . $helper;
+        else if ($this->isApplicationHelper($helper)) $className = $this->_appNamespace . $helper;
+        else throw new \Exception('The helper ' . $helper . ' does not exist');
 
-        if ($className != null) return new $className($params);
-
-        return null;
+        return new $className($params);
     }
 
+    /**
+     * helperExists
+     *
+     * If a helper exists in xen library or in application path
+     *
+     * @param string $helper
+     *
+     * @return bool
+     */
     public function helperExists($helper)
     {
         return $this->isLibraryHelper($helper) || $this->isApplicationHelper($helper);
     }
 
+    /**
+     * isLibraryHelper
+     *
+     * If a helper exists in xen library
+     *
+     * @param string $helper
+     *
+     * @return bool
+     */
     public function isLibraryHelper($helper)
     {
         return file_exists($this->_libPath . $helper . '.php');
     }
 
+    /**
+     * isApplicationHelper
+     *
+     * If a helper exists in application path
+     *
+     * @param string $helper
+     *
+     * @return bool
+     */
     public function isApplicationHelper($helper)
     {
         return file_exists($this->_appPath . $helper . '.php');
