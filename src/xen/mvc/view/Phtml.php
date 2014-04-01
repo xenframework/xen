@@ -16,24 +16,53 @@
 
 namespace xen\mvc\view;
 
+use xen\mvc\helpers\ViewHelperBroker;
+use xen\application\Router;
+
 /**
- * Class File
+ * Class Phtml
  *
- * @package xen\mvc\view
- * @author  Ismael Trascastro itrascastro@xenframework.com
+ * The View
  *
- *          A phtml file can have partials that are also phtml files
+ * All view objects are phtml files.
+ * A phtml file can have partials that are also phtml files
+ * Only one restriction: partial 'content' is mandatory in the layout. This is the View
  *
- *          Only one restriction: partial 'content' is mandatory in the layout
- *
+ * @package    xenframework
+ * @subpackage xen\mvc\view
+ * @author     Ismael Trascastro <itrascastro@xenframework.com>
+ * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
+ * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
+ * @link       https://github.com/xenframework/xen
+ * @since      Class available since Release 1.0.0
  */
 class Phtml
 {
+    /**
+     * @var string Path to the file
+     */
     private $_file;
+
+    /**
+     * @var array The partials
+     */
     private $_partials;
+
+    /**
+     * @var ViewHelperBroker To call view helpers
+     */
     private $_viewHelperBroker;
+
+    /**
+     * @var Router To generate links
+     */
     private $_router;
 
+    /**
+     * __construct
+     *
+     * @param string $_file The .phtml file associated to this view or layout
+     */
     function __construct($_file)
     {
         $this->_file        = $_file;
@@ -41,7 +70,9 @@ class Phtml
     }
 
     /**
-     * @param mixed $_file
+     * setFile
+     *
+     * @param string $_file
      */
     public function setFile($_file)
     {
@@ -49,7 +80,9 @@ class Phtml
     }
 
     /**
-     * @return mixed
+     * getFile
+     *
+     * @return string
      */
     public function getFile()
     {
@@ -57,7 +90,9 @@ class Phtml
     }
 
     /**
-     * @param mixed $viewHelperBroker
+     * setViewHelperBroker
+     *
+     * @param ViewHelperBroker $viewHelperBroker
      */
     public function setViewHelperBroker($viewHelperBroker)
     {
@@ -65,7 +100,9 @@ class Phtml
     }
 
     /**
-     * @return mixed
+     * getViewHelperBroker
+     *
+     * @return ViewHelperBroker
      */
     public function getViewHelperBroker()
     {
@@ -73,7 +110,9 @@ class Phtml
     }
 
     /**
-     * @param mixed $_partials
+     * setPartials
+     *
+     * @param array $_partials
      */
     public function setPartials($_partials)
     {
@@ -81,7 +120,9 @@ class Phtml
     }
 
     /**
-     * @return mixed
+     * getPartials
+     *
+     * @return array
      */
     public function getPartials()
     {
@@ -89,33 +130,59 @@ class Phtml
     }
 
     /**
-     * We propagate phtml variables to partials and also inject the ViewHelperBroker
-     * @param array $_partials Is an associative array ('name' => $partial)
+     * addPartials
+     *
+     * @param array $_partials
      */
     public function addPartials($_partials)
     {
-        foreach ($_partials as $name => $partial) {
-            $this->_partials[$name] = $partial;
+        foreach ($_partials as $partial => $value) {
+
+            $this->_partials[$partial] = $value;
         }
     }
 
-    public function addPartial($name, $value)
+    /**
+     * addPartial
+     *
+     * @param string $partial The partial name
+     * @param Phtml $value
+     */
+    public function addPartial($partial, $value)
     {
-        $this->_partials[$name] = $value;
+        $this->_partials[$partial] = $value;
     }
 
+    /**
+     * partial
+     *
+     * @param string $name
+     *
+     * @return Phtml
+     */
     public function partial($name)
     {
         return $this->_partials[$name];
     }
 
+    /**
+     * out
+     *
+     * Sanitize the output to prevent xss
+     *
+     * @param $string
+     *
+     * @return string
+     */
     public function out($string)
     {
         return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
     }
 
     /**
-     * @param mixed $router
+     * setRouter
+     *
+     * @param Router $router
      */
     public function setRouter($router)
     {
@@ -123,7 +190,9 @@ class Phtml
     }
 
     /**
-     * @return mixed
+     * getRouter
+     *
+     * @return Router
      */
     public function getRouter()
     {
@@ -131,19 +200,31 @@ class Phtml
     }
 
     /**
-     * In Bootstrap we set ViewHelperBroker to the very first view, the layout
-     * ViewHelperBroker will be passed to the child in the render() method
-     * as the view variables of every Phtml => At this point no more variables can be added to this phtml
+     * render
+     *
+     * In Bootstrap ViewHelperBroker is set to the very first view, the layout
+     * ViewHelperBroker will be passed to the child partials in this render() method, the same
+     * as the view variables of every Phtml => At this point no more variables can be added to this Phtml
+     *
+     * The View variables are the public properties
+     * If a property does not exist in a child partial, it will be propagated to it
+     *
+     * ViewHelperBroker and Router are also propagated to its child
      */
     public function render()
     {
         $reflect = new \ReflectionObject($this);
         $properties = $reflect->getProperties(\ReflectionProperty::IS_PUBLIC);
+
         foreach ($this->getPartials() as $partial) {
+
             foreach ($properties as $property) {
+
                 $propertyName = $property->getName();
                 if (!isset($partial->$propertyName)) $partial->$propertyName = $this->$propertyName;
+
             }
+
             $partial->setViewHelperBroker($this->_viewHelperBroker);
             $partial->setRouter($this->_router);
         }
