@@ -16,6 +16,8 @@
 
 namespace xen\config;
 
+use xen\application\config\exception\NoSectionMatchesException;
+
 /**
  * Class Ini
  *
@@ -123,7 +125,7 @@ class Ini extends Config
      * @param string $parent
      * @param array  $array
      *
-     * @throws \Exception
+     * @throws NoSectionMatchesException
      * @return array
      */
     private function _getParentArray($parent, $array)
@@ -135,7 +137,7 @@ class Ini extends Config
             if (trim($sectionName[0]) == $parent) return $arraySection;
         }
 
-        throw new \Exception('No section matches with ' . $parent);
+        throw new NoSectionMatchesException('No section matches with ' . $parent);
     }
 
     /**

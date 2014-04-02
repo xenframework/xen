@@ -14,8 +14,8 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\application\exception;
+namespace xen\application\config\exception;
 
-interface ExceptionInterface extends \xen\application\error\ExceptionInterface
+class NoSectionMatchesException extends \Exception implements ExceptionInterface
 {
 }

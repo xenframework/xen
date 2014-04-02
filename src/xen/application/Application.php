@@ -18,9 +18,10 @@ namespace xen\application;
 
 use bootstrap\Bootstrap;
 use xen\application\bootstrap\Autoloader;
+use xen\application\error\Error;
 use xen\http\Request;
 
-require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/application/Error.php');
+require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/application/error/Error.php');
 require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/application/bootstrap/Autoloader.php');
 
 /**

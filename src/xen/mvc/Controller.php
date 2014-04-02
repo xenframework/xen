@@ -16,6 +16,7 @@
 
 namespace xen\mvc;
 
+use xen\mvc\exception\ControllerParamNotFoundException;
 use xen\mvc\view\Phtml;
 use xen\http\Request;
 use xen\http\Response;
@@ -255,14 +256,14 @@ class Controller
      *
      * @param string $key
      *
-     * @throws \Exception
+     * @throws ControllerParamNotFoundException
      * @return mixed
      */
     public function getParam($key)
     {
         if (array_key_exists($key, $this->_params)) return $this->_params[$key];
 
-        throw new \Exception('The param ' . $key . ' does not exist');
+        throw new ControllerParamNotFoundException('The param ' . $key . ' does not exist');
     }
 
     /**

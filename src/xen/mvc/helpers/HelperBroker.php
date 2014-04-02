@@ -15,6 +15,7 @@
  */
 
 namespace xen\mvc\helpers;
+use xen\mvc\helpers\exception\HelperNotFoundException;
 
 /**
  * Class HelperBroker
@@ -60,14 +61,14 @@ class HelperBroker
      * @param string $helper
      * @param array  $params
      *
-     * @throws \Exception
+     * @throws HelperNotFoundException
      * @return mixed The Helper
      */
     public function getHelper($helper, $params=array())
     {
         if ($this->isLibraryHelper($helper)) $className = $this->_libNamespace . $helper;
         else if ($this->isApplicationHelper($helper)) $className = $this->_appNamespace . $helper;
-        else throw new \Exception('The helper ' . $helper . ' does not exist');
+        else throw new HelperNotFoundException('The helper ' . $helper . ' does not exist');
 
         return new $className($params);
     }

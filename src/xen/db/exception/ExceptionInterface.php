@@ -14,7 +14,7 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\application\exception;
+namespace xen\db\exception;
 
 interface ExceptionInterface extends \xen\application\error\ExceptionInterface
 {

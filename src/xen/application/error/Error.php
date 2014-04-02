@@ -14,8 +14,8 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\application;
-use xen\application\exception\ExceptionInterface;
+namespace xen\application\error;
+
 use xen\http\Response;
 
 require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/http/Response.php');
@@ -78,16 +78,40 @@ class Error
      */
     public function coreExceptionHandler(ExceptionInterface $e)
     {
-        switch (get_class($e)) {
-
-            case 'xen\application\exception\MalFormedRouteException'  :
-
-                break;
-
-            case 'xen\application\exception\NoRouteFoundException'    :
-
-                break;
-        }
+//        switch (get_class($e)) {
+//
+//            case 'xen\application\exception\MalFormedRouteException':
+//
+//                break;
+//
+//            case 'xen\application\exception\NoRouteFoundException':
+//
+//                break;
+//
+//            case 'xen\config\exception\NoSectionMatchesException':
+//
+//                break;
+//
+//            case 'xen\db\exception\MySqlDbConnectException':
+//
+//                break;
+//
+//            case 'xen\db\exception\PostgreSqlDbConnectException':
+//
+//                break;
+//
+//            case 'xen\db\exception\MsSqlDbConnectException':
+//
+//                break;
+//
+//            case 'xen\mvc\helpers\exception\HelperNotFoundException':
+//
+//                break;
+//
+//            case 'xen\mvc\exception\ControllerParamNotFoundException':
+//
+//                break;
+//        }
 
         $content    = $this->_errorView($e);
         $statusCode = 500;

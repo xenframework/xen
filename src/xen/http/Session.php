@@ -37,7 +37,6 @@ class Session
      * If session is not already started it will be started
      *
      * Uses session_status function when php version is almost 5.4.0
-     *
      */
     public function start()
     {

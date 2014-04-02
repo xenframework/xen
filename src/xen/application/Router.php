@@ -244,7 +244,7 @@ class Router
      * @param string $action
      * @param array  $params
      *
-     * @throws \Exception
+     * @throws NoRouteFoundException
      * @return string The url associated to that controller, action and params.
      */
     public function toUrl($controller, $action, $params = array())
@@ -334,7 +334,7 @@ class Router
      *      - escapes '!' in the parsed route
      *
      *
-     * @throws \Exception
+     * @throws MalFormedRouteException
      * @return array The parsed routes
      */
     private function _parseRoutes()

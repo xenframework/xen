@@ -15,7 +15,11 @@
  */
 
 namespace xen\db;
+
+use xen\db\exception\MsSqlDbConnectException;
+use xen\db\exception\MySqlDbConnectException;
 use xen\config\Config;
+use xen\db\exception\PostgreSqlDbConnectException;
 
 /**
  * Class Adapter
@@ -39,7 +43,7 @@ class Adapter extends \PDO
      *
      * @param Config $dbConfig
      *
-     * @throws \Exception From \PDO __construct
+     * @throws MySqlDbConnectException|PostgreSqlDbConnectException|MsSqlDbConnectException
      */
     function __construct(Config $dbConfig)
     {
@@ -55,7 +59,14 @@ class Adapter extends \PDO
 
                 if (isset($dbConfig->charset)) $dsn .= ';charset=' . $dbConfig->charset;
 
-                parent::__construct($dsn, $dbConfig->username, $dbConfig->password);
+                try {
+
+                    parent::__construct($dsn, $dbConfig->username, $dbConfig->password);
+
+                } catch (\Exception $e) {
+
+                    throw new MySqlDbConnectException($e->getMessage());
+                }
 
                 break;
 
@@ -69,7 +80,14 @@ class Adapter extends \PDO
                 $dsn .= ';user=' . $dbConfig->username;
                 $dsn .= ';password=' . $dbConfig->password;
 
-                parent::__construct($dsn);
+                try {
+
+                    parent::__construct($dsn);
+
+                } catch (\Exception $e) {
+
+                    throw new PostgreSqlDbConnectException($e->getMessage());
+                }
 
                 break;
 
@@ -83,7 +101,14 @@ class Adapter extends \PDO
                 $dsn .= ',' . $dbConfig->username;
                 $dsn .= ',' . $dbConfig->password;
 
-                parent::__construct($dsn);
+                try {
+
+                    parent::__construct($dsn);
+
+                } catch (\Exception $e) {
+
+                    throw new MsSqlDbConnectException($e->getMessage());
+                }
 
                 break;
         }
