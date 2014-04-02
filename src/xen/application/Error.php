@@ -15,6 +15,7 @@
  */
 
 namespace xen\application;
+use xen\application\exception\ExceptionInterface;
 use xen\http\Response;
 
 require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/http/Response.php');
@@ -71,12 +72,23 @@ class Error
      *
      * All this exceptions are not in a try catch block, so the current request ends here
      *
-     * @param \Exception $e
+     * @param ExceptionInterface $e
      *
      * @return Response
      */
-    public function coreExceptionHandler(\Exception $e)
+    public function coreExceptionHandler(ExceptionInterface $e)
     {
+        switch (get_class($e)) {
+
+            case 'xen\application\exception\MalFormedRouteException'  :
+
+                break;
+
+            case 'xen\application\exception\NoRouteFoundException'    :
+
+                break;
+        }
+
         $content    = $this->_errorView($e);
         $statusCode = 500;
 

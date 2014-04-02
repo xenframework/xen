@@ -15,6 +15,8 @@
  */
 
 namespace xen\application;
+use xen\application\exception\MalFormedRouteException;
+use xen\application\exception\NoRouteFoundException;
 
 /**
  * Class Router
@@ -266,11 +268,8 @@ class Router
             }
         }
 
-        throw new \Exception('There is no route associated to the controller ' .
-            $controller . ', the action ' .
-            $action .
-            ' and the given params'
-        );
+        throw new NoRouteFoundException('There is no route associated to the controller ' . $controller .
+                                        ', the action ' . $action . ' and the given params');
     }
 
     /**
@@ -363,12 +362,9 @@ class Router
                 }
             }
 
-            if (!isset($routeValue['controller']) ||
-                !isset($routeValue['action']) ||
-                !isset($routeValue['allow'])
-            ) throw new \Exception($route .
-                ' Malformed route. Be sure you set the controller,
-                the action and the allow sections in your routes definition');
+            if (!isset($routeValue['controller']) || !isset($routeValue['action']) || !isset($routeValue['allow']))
+                throw new MalFormedRouteException($route . ' Malformed route. Be sure you set the controller,
+                                                the action and the allow sections in your routes definition');
 
             $parsedRoute = array(
                 'controller'    => $routeValue['controller'],
