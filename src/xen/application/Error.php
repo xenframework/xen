@@ -69,6 +69,8 @@ class Error
      * Creates an Error response with a 500 error code
      * No output buffering needed because the response we are still in the core
      *
+     * All this exceptions are not in a try catch block, so the current request ends here
+     *
      * @param \Exception $e
      *
      * @return Response
@@ -129,4 +131,4 @@ class Error
 
         return $html;
     }
-} 
+}

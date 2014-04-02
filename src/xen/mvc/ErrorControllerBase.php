@@ -16,9 +16,6 @@
 
 namespace xen\mvc;
 
-use xen\application\Application;
-use xen\mvc\view\Phtml;
-
 /**
  * Class ErrorControllerBase
  *
@@ -38,6 +35,7 @@ abstract class ErrorControllerBase extends Controller
      * exceptionHandlerAction
      *
      * Used when a new Exception is raised
+     * A new layout is recommended
      *
      * @return mixed
      */

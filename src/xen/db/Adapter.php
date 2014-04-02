@@ -15,6 +15,7 @@
  */
 
 namespace xen\db;
+use xen\config\Config;
 
 /**
  * Class Adapter
@@ -36,11 +37,11 @@ class Adapter extends \PDO
      *
      * Creates a PDO object depending on the given driver in the dbConfig
      *
-     * @param $dbConfig
+     * @param Config $dbConfig
      *
      * @throws \Exception From \PDO __construct
      */
-    function __construct($dbConfig)
+    function __construct(Config $dbConfig)
     {
         switch (strtolower($dbConfig->driver)) {
 

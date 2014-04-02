@@ -376,7 +376,7 @@ class Controller
      */
     public function render()
     {
-        return $this->_layout->render();
+        $this->_layout->render();
     }
 
     /**
@@ -399,7 +399,7 @@ class Controller
      * _forward
      *
      * Calls to another action in the same controller
-     * Updates the view pointing the new action to enable the new action execution
+     * Updates the view pointing to the new action to enable its execution
      *
      * @param string $action
      *

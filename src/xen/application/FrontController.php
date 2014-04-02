@@ -115,7 +115,7 @@ class FrontController
      *      1. Before calling the Action. So IoC can be done before calling any action in any controller
      *      2. After calling the Action. So IoC can be done after calling any action in any controller
      *
-     * @return mixed The Response
+     * @return Response The Response
      */
     public function run()
     {
