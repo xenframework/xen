@@ -77,7 +77,7 @@ class Application
     /**
      * @var string
      */
-    private $_appEnv;
+    private $_appStage;
 
     /**
      * @var Error;
@@ -93,12 +93,12 @@ class Application
      * Call the autoloader
      * Creates the Request object from Globals
      *
-     * @param string $_appEnv {DEVELOPMENT, TEST, PRODUCTION} Defines the application state
+     * @param string $_appStage {DEVELOPMENT, TEST, PRODUCTION} Defines the application state
      */
-    public function __construct($_appEnv)
+    public function __construct($_appStage)
     {
         $this->_error = new Error();
-        $this->_appEnv = $_appEnv;
+        $this->_appStage = $_appStage;
         $this->_autoLoader();
         $this->_request = Request::createFromGlobals();
     }
@@ -118,13 +118,13 @@ class Application
     /**
      * bootstrap
      *
-     * The Bootstrap object is created with 4 initial resources (appEnv, Autoloader, Request, Error) and then we
+     * The Bootstrap object is created with 4 initial resources (appStage, Autoloader, Request, Error) and then we
      * bootstrap the application
      */
     public function bootstrap()
     {
         $this->_bootstrap = new Bootstrap();
-        $this->_bootstrap->addResource('AppEnv', $this->_appEnv);
+        $this->_bootstrap->addResource('AppStage', $this->_appStage);
         $this->_bootstrap->addResource('AutoLoader', $this->_autoLoader);
         $this->_bootstrap->addResource('Request', $this->_request);
         $this->_bootstrap->addResource('Error', $this->_error);

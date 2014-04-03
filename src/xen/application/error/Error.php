@@ -72,47 +72,25 @@ class Error
      *
      * All this exceptions are not in a try catch block, so the current request ends here
      *
+     *      get_class($e) where ExceptionInterface $e
+     *
+     *          - 'xen\application\bootstrap\exception\BootstrapResourceNotFoundException'
+     *          - 'xen\application\bootstrap\exception\BootstrapDependencyDatabaseNotFoundException'
+     *          - 'xen\application\exception\MalFormedRouteException'
+     *          - 'xen\application\exception\NoRouteFoundException'
+     *          - 'xen\config\exception\NoSectionMatchesException'
+     *          - 'xen\db\exception\MySqlDbConnectException'
+     *          - 'xen\db\exception\PostgreSqlDbConnectException'
+     *          - 'xen\db\exception\MsSqlDbConnectException'
+     *          - 'xen\mvc\helpers\exception\HelperNotFoundException'
+     *          - 'xen\mvc\exception\ControllerParamNotFoundException'
+     *
      * @param ExceptionInterface $e
      *
      * @return Response
      */
     public function coreExceptionHandler(ExceptionInterface $e)
     {
-//        switch (get_class($e)) {
-//
-//            case 'xen\application\exception\MalFormedRouteException':
-//
-//                break;
-//
-//            case 'xen\application\exception\NoRouteFoundException':
-//
-//                break;
-//
-//            case 'xen\config\exception\NoSectionMatchesException':
-//
-//                break;
-//
-//            case 'xen\db\exception\MySqlDbConnectException':
-//
-//                break;
-//
-//            case 'xen\db\exception\PostgreSqlDbConnectException':
-//
-//                break;
-//
-//            case 'xen\db\exception\MsSqlDbConnectException':
-//
-//                break;
-//
-//            case 'xen\mvc\helpers\exception\HelperNotFoundException':
-//
-//                break;
-//
-//            case 'xen\mvc\exception\ControllerParamNotFoundException':
-//
-//                break;
-//        }
-
         $content    = $this->_errorView($e);
         $statusCode = 500;
 

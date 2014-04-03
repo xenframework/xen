@@ -42,7 +42,7 @@ use xen\application\Router;
  *      - Config (The application configure settings)
  *      - ActionHelperBroker
  *      - EventSystem
- *      - AppEnv
+ *      - AppStage
  *      - Router
  *
  * @package    xenframework
@@ -68,7 +68,7 @@ class Controller
     /**
      * @var array
      */
-    protected $_params;
+    private $_params;
 
     /**
      * @var Request
@@ -103,7 +103,7 @@ class Controller
     /**
      * @var string
      */
-    protected $_appEnv;
+    protected $_appStage;
 
     /**
      * @var Router
@@ -130,25 +130,25 @@ class Controller
     }
 
     /**
-     * setAppEnv
+     * setAppStage
      *
      * The Application Environment state
      *
-     * @param string $appEnv
+     * @param string $appStage
      */
-    public function setAppEnv($appEnv)
+    public function setAppStage($appStage)
     {
-        $this->_appEnv = $appEnv;
+        $this->_appStage = $appStage;
     }
 
     /**
-     * getAppEnv
+     * getAppStage
      *
      * @return string
      */
-    public function getAppEnv()
+    public function getAppStage()
     {
-        return $this->_appEnv;
+        return $this->_appStage;
     }
 
     /**
@@ -264,6 +264,17 @@ class Controller
         if (array_key_exists($key, $this->_params)) return $this->_params[$key];
 
         throw new ControllerParamNotFoundException('The param ' . $key . ' does not exist');
+    }
+
+    /**
+     * setParam
+     *
+     * @param string $param
+     * @param mixed $value
+     */
+    public function setParam($param, $value)
+    {
+        $this->_params[$param] = $value;
     }
 
     /**

@@ -16,6 +16,8 @@
 
 namespace xen\application\bootstrap;
 
+use xen\application\bootstrap\exception\BootstrapDependencyDatabaseNotFoundException;
+use xen\application\bootstrap\exception\BootstrapResourceNotFoundException;
 use xen\application\Router;
 use xen\config\Config;
 use xen\config\Ini;
@@ -52,9 +54,10 @@ use xen\mvc\view\Phtml;
  *
  * The resources/dependencies created in Bootstrap are:
  *
+ *      - Role                  => Default role for ACL. It will be set to 'guest'
  *      - Config                => 'application/configs/config.ini'
  *      - ApplicationConfig     => 'application/configs/application.ini'
- *      - Router
+ *      - Router                => The router
  *      - ViewHelperBroker      => Factory for view helpers
  *      - ActionHelperBroker    => Factory for action helpers
  *      - LayoutPath            => Path to the default layout
@@ -66,10 +69,10 @@ use xen\mvc\view\Phtml;
  *
  * Other resources stored in the Bootstrap are:
  *
- *      - Request
- *      - Response
- *      - AppEnv
- *      - Autoloader
+ *      - Request               => The Request
+ *      - Response              => The Response
+ *      - AppStage              => Application development stage
+ *      - Autoloader            => The Auto Loader
  *      - Error                 => Manages core exceptions
  *
  * Other bootstrap actions like:
@@ -91,7 +94,7 @@ class BootstrapBase
      *
      * @var array
      */
-    protected $_resources;
+    private $_resources;
 
     /**
      * __construct
@@ -122,7 +125,7 @@ class BootstrapBase
         forEach($methods as $method)
         {
             $resourceName = ucfirst(substr($method, 5));
-            $this->_resources[$resourceName] = $this->$method();
+            $this->addResource($resourceName, $this->$method());
         }
     }
 
@@ -144,7 +147,7 @@ class BootstrapBase
             if (strlen($method) > 8 && substr($method, 0, 8) == '_default') {
 
                 $resourceName = ucfirst(substr($method, 8));
-                $this->_resources[$resourceName] = $this->$method();
+                $this->addResource($resourceName, $this->$method());
 
             } else if (strlen($method) > 5 && substr($method, 0, 5) == '_init') {
 
@@ -190,19 +193,33 @@ class BootstrapBase
      *
      * @param string $resource identifier of the resource
      *
-     * @throws \Exception
+     * @throws BootstrapResourceNotFoundException
      * @return mixed The resource
      */
     public function getResource($resource)
     {
-        if ($this->exists($resource)) return $this->_resources[$resource];
+        if ($this->resourceExists($resource)) return $this->_resources[$resource];
 
-        throw new \Exception('Resource ' . $resource . ' does not exist in Bootstrap');
+        throw new BootstrapResourceNotFoundException('Resource ' . $resource . ' does not exist in Bootstrap');
     }
 
-    public function exists($resource)
+    public function resourceExists($resource)
     {
         return array_key_exists($resource, $this->_resources);
+    }
+
+    /**
+     * _initRole
+     *
+     * The Role resource
+     *
+     * Set the default role for ACL
+     *
+     * @return string
+     */
+    protected function _defaultRole()
+    {
+        return 'guest';
     }
 
     /**
@@ -230,7 +247,7 @@ class BootstrapBase
      */
     protected function _defaultApplicationConfig()
     {
-        return new Ini('application/configs/application.ini', $this->getResource('AppEnv'));
+        return new Ini('application/configs/application.ini', $this->getResource('AppStage'));
     }
 
     /**
@@ -242,7 +259,7 @@ class BootstrapBase
      */
     protected function _defaultConfig()
     {
-        return new Ini('application/configs/config.ini', $this->getResource('AppEnv'));
+        return new Ini('application/configs/config.ini', $this->getResource('AppStage'));
     }
 
     /**
@@ -394,25 +411,24 @@ class BootstrapBase
      *
      * @param string $db The ID of the database
      *
-     * @throws \Exception
+     * @throws BootstrapDependencyDatabaseNotFoundException
      */
     protected function _dependencyDatabase($db)
     {
-        if (!array_key_exists('Databases', $this->_resources)) {
+        if (!$this->resourceExists('Databases')) {
 
-            $this->_resources['Databases'] = require str_replace(
-                '/',
-                DIRECTORY_SEPARATOR,
-                'application/configs/databases.php'
-            );
+            $databases = require str_replace('/', DIRECTORY_SEPARATOR, 'application/configs/databases.php');
+            $this->addResource('Databases', $databases);
         }
 
-        if (!array_key_exists($db, $this->_resources['Databases']))
-            throw new \Exception('Database ' . $db . ' not found in "application/configs/databases.php"');
+        if (!array_key_exists($db, $this->getResource('Databases')))
+            throw new BootstrapDependencyDatabaseNotFoundException('Dependency database ' . $db .
+                                                          ' not found in "application/configs/databases.php"');
 
-        $dbConfig = new Config($this->_resources['Databases'][$db]);
+        $databasesResource = $this->getResource('Databases');
+        $dbConfig = new Config($databasesResource[$db]);
 
-        $this->_resources['Database_' . $db] = new Adapter($dbConfig);
+        $this->addResource('Database_' . $db, new Adapter($dbConfig));
     }
 
     /**
@@ -436,7 +452,7 @@ class BootstrapBase
      */
     public function resolveDependencies($object)
     {
-        $dependencies = $this->_resources['Dependencies'];
+        $dependencies = $this->getResource('Dependencies');
 
         //it can be an object
         if (is_object($object)) {
@@ -452,14 +468,14 @@ class BootstrapBase
                 }
             }
 
-            $this->_resources[$className] = $object;
+            $this->addResource($className, $object);
 
             return 0;
 
         //it can already be a resource
-        } else if (array_key_exists($object, $this->_resources)) {
+        } else if ($this->resourceExists($object)) {
 
-            return $this->_resources[$object];
+            return $this->getResource($object);
 
         //it can be a resource not already executed in bootstrap
         //this kind of resources are added to bootstrap by its own like any other bootstrap resource
@@ -467,7 +483,7 @@ class BootstrapBase
 
             $db = substr($object, 9);
             $this->_dependencyDatabase($db);
-            return $this->_resources[$object];
+            return $this->getResource($object);
 
         //it is not an object but it has dependencies and we have to resolve them and then instantiate it
         } else if (array_key_exists($object, $dependencies)) {
@@ -481,15 +497,15 @@ class BootstrapBase
                 $resource->$setMethod($arg);
             }
 
-            $this->_resources[$object] = $resource;
+            $this->addResource($object, $resource);
             return $resource;
 
         //it is not an object and it does not have dependencies but it must be instantiated
         //because it is needed as a dependency for another resource
         } else {
 
-            $this->_resources[$object] = new $object();
-            return $this->_resources[$object];
+            $this->addResource($object, new $object());
+            return $this->getResource($object);
         }
     }
 
@@ -501,7 +517,7 @@ class BootstrapBase
      *
      * Dependencies are:
      *
-     *      - AppEnv
+     *      - AppStage
      *      - EventSystem
      *      - Router
      *      - Layout
@@ -521,17 +537,17 @@ class BootstrapBase
      */
     public function resolveController($controller, $controllerName, $action, $error = false)
     {
-        $controller->setAppEnv($this->getResource('AppEnv'));
-        $controller->setEventSystem($this->_resources['EventSystem']);
-        $controller->setRouter($this->_resources['Router']);
+        $controller->setAppStage($this->getResource('AppStage'));
+        $controller->setEventSystem($this->getResource('EventSystem'));
+        $controller->setRouter($this->getResource('Router'));
 
-        $layout =  ($error) ? clone $this->_resources['Layout'] : $this->_resources['Layout'];
-        $layout->setRouter($this->_resources['Router']);
+        $layout =  ($error) ? clone $this->getResource('Layout') : $this->getResource('Layout');
+        $layout->setRouter($this->getResource('Router'));
         $controller->setLayout($layout);
 
-        $controller->setActionHelperBroker($this->_resources['ActionHelperBroker']);
-        $controller->setConfig($this->_resources['Config']);
-        $controller->setParams($this->_resources['Router']->getParams());
+        $controller->setActionHelperBroker($this->getResource('ActionHelperBroker'));
+        $controller->setConfig($this->getResource('Config'));
+        $controller->setParams($this->getResource('Router')->getParams());
 
         $viewPath = str_replace('/', DIRECTORY_SEPARATOR,
             'application/views/scripts/' . lcfirst($controllerName));
@@ -540,14 +556,15 @@ class BootstrapBase
 
         if (!$error) {
 
-            $this->_resources['Request']->setController(lcfirst($controllerName));
-            $this->_resources['Request']->setAction($action);
-            $this->_resources['Request']->setParams($this->_resources['Router']->getParams());
-            $controller->setRequest($this->_resources['Request']);
+            $request = $this->getResource('Request');
+            $request->setController(lcfirst($controllerName));
+            $request->setAction($action);
+            $request->setParams($this->getResource('Router')->getParams());
+            $controller->setRequest($request);
         }
 
-        $controller->setSession($this->_resources['Session']);
-        $controller->setResponse($this->_resources['Response']);
+        $controller->setSession($this->getResource('Session'));
+        $controller->setResponse($this->getResource('Response'));
 
         $this->resolveDependencies($controller);
     }
