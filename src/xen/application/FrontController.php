@@ -115,6 +115,11 @@ class FrontController
      *      1. Before calling the Action. So IoC can be done before calling any action in any controller
      *      2. After calling the Action. So IoC can be done after calling any action in any controller
      *
+     * An action can render a view or can return the response directly (json response):
+     *
+     *      1. $content == null ===> $content = ob_get_clean()
+     *      2. $content = $controller->$action()
+     *
      * @return Response The Response
      */
     public function run()
@@ -141,7 +146,7 @@ class FrontController
 
             $action = $this->_action;
 
-            $this->_controller->$action();
+            $content = $this->_controller->$action();
 
             $this->_eventSystem->raiseEvent('PostDispatch', array('controller' => $this->_controller));
 
@@ -150,12 +155,14 @@ class FrontController
             ob_end_clean();
             ob_start();
 
-            $this->_exceptionHandler($e);
+            $content = $this->_exceptionHandler($e);
         }
+
+        if (!isset($content)) $content = ob_get_clean();
 
         if (!$this->_response->getStatusCode()) $this->_response->setStatusCode($this->_statusCode);
 
-        $this->_response->setContent(ob_get_clean());
+        $this->_response->setContent($content);
 
         return $this->_response->send();
     }
@@ -171,8 +178,9 @@ class FrontController
     {
         $this->_errorController->setParams(array('e' => $e));
         $action = FrontController::EXCEPTION_HANDLER_ACTION . 'Action';
-        $this->_errorController->$action();
         $this->_statusCode = 500;
+
+        return $this->_errorController->$action();
     }
 
     /**
