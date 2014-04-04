@@ -53,24 +53,33 @@ class HelperBroker
     protected $_appPath;
 
     /**
+     * @var string The helper class name
+     */
+    protected $_helperClassName;
+
+    /**
+     * @var array The helper params
+     */
+    protected $_helperParams;
+
+    /**
      * getHelper
      *
      * The Factory
      * Looks for a helper in the xen library or in the application path
      *
-     * @param string $helper
-     * @param array  $params
+     * @param string    $helper
+     * @param array     $params
      *
-     * @throws HelperNotFoundException
-     * @return mixed The Helper
+     * @throws exception\HelperNotFoundException
      */
-    public function getHelper($helper, $params=array())
+    protected function getHelper($helper, $params=array())
     {
-        if ($this->isLibraryHelper($helper)) $className = $this->_libNamespace . $helper;
-        else if ($this->isApplicationHelper($helper)) $className = $this->_appNamespace . $helper;
+        if ($this->isLibraryHelper($helper)) $this->_helperClassName = $this->_libNamespace . $helper;
+        else if ($this->isApplicationHelper($helper)) $this->_helperClassName = $this->_appNamespace . $helper;
         else throw new HelperNotFoundException('The helper ' . $helper . ' does not exist');
 
-        return new $className($params);
+        $this->_helperParams = $params;
     }
 
     /**

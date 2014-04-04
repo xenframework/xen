@@ -68,7 +68,7 @@ abstract class Handler
      *
      * Used to know if this handler handle an event
      *
-     * @param $event
+     * @param string $event
      *
      * @return bool
      */
@@ -82,7 +82,7 @@ abstract class Handler
      *
      * This method contains the code who handles the event
      *
-     * @param $params
+     * @param array $params
      */
     public abstract function handle($params);
 }

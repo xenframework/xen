@@ -16,6 +16,8 @@
 
 namespace xen\mvc\helpers;
 
+use xen\application\Router;
+
 /**
  * Class ViewHelper
  *
@@ -37,14 +39,66 @@ abstract class ViewHelper
     protected $_html;
 
     /**
+     * @var array The params from the view
+     */
+    protected $_params;
+
+    /**
+     * @var Router The router to enable url generation in view helpers
+     */
+    protected $_router;
+
+    /**
      * __construct
-     *
-     * The ViewHelper constructor
-     * It can receive params from the View
-     *
+     */
+    public function __construct()
+    {
+    }
+
+    /**
      * @param array $params
      */
-    abstract function __construct($params=array());
+    public function setParams($params)
+    {
+        $this->_params = $params;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParams()
+    {
+        return $this->_params;
+    }
+
+    /**
+     * html
+     *
+     * This method has to be used to set the $_html variable
+     *
+     * @return mixed
+     */
+    abstract protected function _html();
+
+    /**
+     * getRouter
+     *
+     * @return \xen\application\Router
+     */
+    public function getRouter()
+    {
+        return $this->_router;
+    }
+
+    /**
+     * setRouter
+     *
+     * @param \xen\application\Router $router
+     */
+    public function setRouter($router)
+    {
+        $this->_router = $router;
+    }
 
     /**
      * show
@@ -55,6 +109,8 @@ abstract class ViewHelper
      */
     public function show()
     {
+        $this->_html();
+
         return $this->_html;
     }
 }

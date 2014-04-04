@@ -90,7 +90,7 @@ class Router
      */
     private function _cleanUrl($url)
     {
-        $this->_url = ($url === null) ? '/' : '/' . filter_var($url, FILTER_SANITIZE_URL);
+        $this->_url = ($url === '') ? '/' : '/' . filter_var($url, FILTER_SANITIZE_URL);
     }
 
     /**
@@ -244,7 +244,7 @@ class Router
      * @param string $action
      * @param array  $params
      *
-     * @throws NoRouteFoundException
+     * @throws exception\NoRouteFoundException
      * @return string The url associated to that controller, action and params.
      */
     public function toUrl($controller, $action, $params = array())
@@ -333,8 +333,7 @@ class Router
      *      - sets the param names in the parsed route
      *      - escapes '!' in the parsed route
      *
-     *
-     * @throws MalFormedRouteException
+     * @throws exception\MalFormedRouteException
      * @return array The parsed routes
      */
     private function _parseRoutes()

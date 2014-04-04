@@ -18,6 +18,7 @@ namespace xen\mvc\view;
 
 use xen\mvc\helpers\ViewHelperBroker;
 use xen\application\Router;
+use xen\mvc\view\exception\PartialNotFoundException;
 
 /**
  * Class Phtml
@@ -156,13 +157,21 @@ class Phtml
     /**
      * partial
      *
-     * @param string $name
+     * @param string $partial
      *
+     * @throws exception\PartialNotFoundException
      * @return Phtml
      */
-    public function partial($name)
+    public function partial($partial)
     {
-        return $this->_partials[$name];
+        if ($this->partialExists($partial)) return $this->_partials[$partial];
+
+        throw new PartialNotFoundException($partial . ' partial does not exist');
+    }
+
+    public function partialExists($partial)
+    {
+        return array_key_exists($partial, $this->_partials);
     }
 
     /**
@@ -170,7 +179,7 @@ class Phtml
      *
      * Sanitize the output to prevent xss
      *
-     * @param $string
+     * @param string $string
      *
      * @return string
      */

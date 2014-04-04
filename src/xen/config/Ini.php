@@ -125,7 +125,7 @@ class Ini extends Config
      * @param string $parent
      * @param array  $array
      *
-     * @throws NoSectionMatchesException
+     * @throws \xen\application\config\exception\NoSectionMatchesException
      * @return array
      */
     private function _getParentArray($parent, $array)

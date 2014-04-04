@@ -84,6 +84,9 @@ class Error
      *          - 'xen\db\exception\MsSqlDbConnectException'
      *          - 'xen\mvc\helpers\exception\HelperNotFoundException'
      *          - 'xen\mvc\exception\ControllerParamNotFoundException'
+     *          - 'xen\mvc\view\exception\PartialNotFoundException'
+     *          - 'xen\http\exception\GlobalGetKeyNotFoundException'
+     *          - 'xen\http\exception\GlobalPostKeyNotFoundException'
      *
      * @param ExceptionInterface $e
      *

@@ -43,7 +43,9 @@ class Adapter extends \PDO
      *
      * @param Config $dbConfig
      *
-     * @throws MySqlDbConnectException|PostgreSqlDbConnectException|MsSqlDbConnectException
+     * @throws exception\MsSqlDbConnectException
+     * @throws exception\MySqlDbConnectException
+     * @throws exception\PostgreSqlDbConnectException
      */
     function __construct(Config $dbConfig)
     {

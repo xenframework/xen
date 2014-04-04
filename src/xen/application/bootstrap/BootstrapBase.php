@@ -193,7 +193,7 @@ class BootstrapBase
      *
      * @param string $resource identifier of the resource
      *
-     * @throws BootstrapResourceNotFoundException
+     * @throws exception\BootstrapResourceNotFoundException
      * @return mixed The resource
      */
     public function getResource($resource)
@@ -285,7 +285,10 @@ class BootstrapBase
      */
     protected function _defaultViewHelperBroker()
     {
-        return new ViewHelperBroker();
+        $viewHelperBroker = new ViewHelperBroker();
+        $viewHelperBroker->setRouter($this->getResource('Router'));
+
+        return $viewHelperBroker;
     }
 
     /**
@@ -411,7 +414,7 @@ class BootstrapBase
      *
      * @param string $db The ID of the database
      *
-     * @throws BootstrapDependencyDatabaseNotFoundException
+     * @throws exception\BootstrapDependencyDatabaseNotFoundException
      */
     protected function _dependencyDatabase($db)
     {

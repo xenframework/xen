@@ -43,4 +43,11 @@ class ActionHelperBroker extends HelperBroker
         $this->_libPath      = str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/mvc/helpers/actionHelpers/');
         $this->_appPath      = str_replace('/', DIRECTORY_SEPARATOR, 'application/controllers/helpers/');
     }
+
+    public function getHelper($helper, $params=array())
+    {
+        parent::getHelper($helper, $params);
+
+        return new $this->_helperClassName($this->_helperParams);
+    }
 }

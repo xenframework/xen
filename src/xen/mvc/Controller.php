@@ -256,7 +256,7 @@ class Controller
      *
      * @param string $key
      *
-     * @throws ControllerParamNotFoundException
+     * @throws exception\ControllerParamNotFoundException
      * @return mixed
      */
     public function getParam($key)

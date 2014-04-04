@@ -15,6 +15,8 @@
  */
 
 namespace xen\http;
+use xen\http\exception\GlobalGetKeyNotFoundException;
+use xen\http\exception\GlobalPostKeyNotFoundException;
 
 /**
  * Class Request
@@ -113,13 +115,28 @@ class Request
      *
      * @param string $name
      *
-     * @return array|null
+     * @throws exception\GlobalGetKeyNotFoundException
+     * @return array|string
      */
     public function get($name = '')
     {
         if ($name == '') return $this->_get;
 
-        return (isset($_GET[$name])) ? $_GET[$name] : null;
+        if ($this->getExists($name)) return $_GET[$name];
+
+        throw new GlobalGetKeyNotFoundException('\'' . $name . '\'' . ' key does not exist in $_GET superglobal variable');
+    }
+
+    /**
+     * getExists
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function getExists($name)
+    {
+        return isset($_GET[$name]);
     }
 
     /**
@@ -129,13 +146,28 @@ class Request
      *
      * @param string $name
      *
-     * @return array|null
+     * @throws exception\GlobalPostKeyNotFoundException
+     * @return array|string
      */
     public function post($name = '')
     {
         if ($name == '') return $this->_post;
 
-        return (isset($_POST[$name])) ? $_POST[$name] : null;
+        if ($this->postExists($name)) return $_POST[$name];
+
+        throw new GlobalPostKeyNotFoundException('\'' . $name . '\'' . ' key does not exist in $_POST superglobal variable');
+    }
+
+    /**
+     * postExists
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function postExists($name)
+    {
+        return isset($_POST[$name]);
     }
 
     /**

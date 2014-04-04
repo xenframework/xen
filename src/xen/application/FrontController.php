@@ -119,7 +119,7 @@ class FrontController
      */
     public function run()
     {
-        $url = $this->_request->get('url');
+        $url = ($this->_request->getExists('url')) ? $this->_request->get('url') : '';
         $this->_request->setUrl($url);
 
         $this->_router->setUrl($url);
