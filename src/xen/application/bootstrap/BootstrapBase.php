@@ -280,7 +280,8 @@ class BootstrapBase
      * ViewHelperBroker resource
      *
      * It is a factory for View Helpers
-     *
+     * Injects the Router
+     * 
      * @return ViewHelperBroker
      */
     protected function _defaultViewHelperBroker()

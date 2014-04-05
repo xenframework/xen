@@ -87,6 +87,9 @@ class Error
      *          - 'xen\mvc\view\exception\PartialNotFoundException'
      *          - 'xen\http\exception\GlobalGetKeyNotFoundException'
      *          - 'xen\http\exception\GlobalPostKeyNotFoundException'
+     *          - 'xen\http\exception\RequestServerKeyNotFoundException'
+     *          - 'xen\http\exception\RequestEnvKeyNotFoundException'
+     *          - 'xen\http\exception\SessionKeyNotFoundException'
      *
      * @param ExceptionInterface $e
      *

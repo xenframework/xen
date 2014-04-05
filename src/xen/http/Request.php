@@ -17,6 +17,8 @@
 namespace xen\http;
 use xen\http\exception\GlobalGetKeyNotFoundException;
 use xen\http\exception\GlobalPostKeyNotFoundException;
+use xen\http\exception\RequestEnvKeyNotFoundException;
+use xen\http\exception\RequestServerKeyNotFoundException;
 
 /**
  * Class Request
@@ -310,11 +312,26 @@ class Request
      *
      * @param string $key
      *
-     * @return string|null
+     * @throws exception\RequestServerKeyNotFoundException
+     * @return string
      */
     public function server($key)
     {
-        return (isset($_SERVER[$key])) ? $_SERVER[$key] : null;
+        if ($this->serverExists($key)) return $_SERVER[$key];
+
+        throw new RequestServerKeyNotFoundException('\'' . $key . '\'' . ' not found in Request $_SERVER superglobal');
+    }
+
+    /**
+     * serverExists
+     *
+     * @param $key
+     *
+     * @return bool
+     */
+    public function serverExists($key)
+    {
+        return (isset($_SERVER[$key]));
     }
 
     /**
@@ -324,11 +341,26 @@ class Request
      *
      * @param $key
      *
-     * @return string|null
+     * @throws exception\RequestEnvKeyNotFoundException
+     * @return string
      */
     public function env($key)
     {
-        return (isset($_ENV[$key])) ? $_ENV[$key] : null;
+        if ($this->envExists($key)) return $_ENV[$key];
+
+        throw new RequestEnvKeyNotFoundException('\'' . $key . '\'' . ' not found in Request $_ENV superglobal');
+    }
+
+    /**
+     * envExists
+     *
+     * @param $key
+     *
+     * @return bool
+     */
+    public function envExists($key)
+    {
+        return (isset($_ENV[$key]));
     }
 
     /**

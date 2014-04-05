@@ -15,6 +15,7 @@
  */
 
 namespace xen\http;
+use xen\http\exception\SessionKeyNotFoundException;
 
 /**
  * Class Session
@@ -63,11 +64,26 @@ class Session
      *
      * @param $name
      *
-     * @return mixed|null
+     * @throws exception\SessionKeyNotFoundException
+     * @return mixed
      */
     public function get($name)
     {
-        return (isset($_SESSION[$name])) ? $_SESSION[$name] : null;
+        if ($this->exists($name)) return $_SESSION[$name];
+
+        throw new SessionKeyNotFoundException('\'' . $name . '\'' . ' not found in $_SESSION superglobal');
+    }
+
+    /**
+     * exists
+     *
+     * @param $name
+     *
+     * @return bool
+     */
+    public function exists($name)
+    {
+        return (isset($_SESSION[$name]));
     }
 
     /**
