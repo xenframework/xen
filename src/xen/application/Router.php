@@ -307,19 +307,20 @@ class Router
                 }
             }
 
-            if (!isset($routeValue['controller']) || !isset($routeValue['action']) || !isset($routeValue['allow']))
+            if (!isset($routeValue['controller']) || !isset($routeValue['action']))
                 throw new MalFormedRouteException($route . ' Malformed route. Be sure you set the controller,
                                                 the action and the allow sections in your routes definition');
 
-            $namespace = (isset($routeValue['namespace'])) ? $routeValue['namespace'] : 'controllers';
-            $expires = (isset($routeValue['expires'])) ? $routeValue['expires'] : 0;
+            $namespace  = (isset($routeValue['namespace'])) ? $routeValue['namespace'] : 'controllers';
+            $expires    = (isset($routeValue['expires'])) ? $routeValue['expires'] : 0;
+            $allow      = (isset($routeValue['allow'])) ? $routeValue['allow'] : array();
 
             $parsedRoute = array(
                 'namespace'     => $namespace,
                 'controller'    => $routeValue['controller'],
                 'action'        => $routeValue['action'],
                 'params'        => $paramNames,
-                'allow'         => $routeValue['allow'],
+                'allow'         => $allow,
                 'expires'       => $expires,
             );
 
