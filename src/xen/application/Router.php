@@ -311,9 +311,11 @@ class Router
                 throw new MalFormedRouteException($route . ' Malformed route. Be sure you set the controller,
                                                 the action and the allow sections in your routes definition');
 
+            $namespace = (isset($routeValue['namespace'])) ? $routeValue['namespace'] : 'controllers';
             $expires = (isset($routeValue['expires'])) ? $routeValue['expires'] : 0;
 
             $parsedRoute = array(
+                'namespace'     => $namespace,
                 'controller'    => $routeValue['controller'],
                 'action'        => $routeValue['action'],
                 'params'        => $paramNames,

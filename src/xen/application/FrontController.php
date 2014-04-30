@@ -142,9 +142,10 @@ class FrontController
                 else
                 {
                     $controllerName         = ucfirst($route['controller']);
-                    $controllerClassName    = 'controllers\\' . $controllerName . 'Controller';
+                    $controllerClassName    = $route['namespace'] . '\\' . $controllerName . 'Controller';
                     $actionName             = $route['action'];
                     $action                 = $actionName . 'Action';
+                    $viewPath = implode('/', array_slice(explode('\\', $route['namespace']), 1));
 
                     $controller = new $controllerClassName();
 
@@ -155,6 +156,7 @@ class FrontController
                         $controllerName,
                         $action,
                         $actionName,
+                        $viewPath,
                         $controllerParams
                     );
 
@@ -177,7 +179,7 @@ class FrontController
 
                 $this->_response->setStatusCode(403);
 
-                $content = $this->_executeTheAction($controller, $controllerName, $action, $actionName, $controllerParams);
+                $content = $this->_executeTheAction($controller, $controllerName, $action, $actionName, '', $controllerParams);
             }
         }
         else
@@ -196,6 +198,7 @@ class FrontController
                 $controllerName,
                 $action,
                 $actionName,
+                '',
                 $controllerParams
             );
         }
@@ -206,7 +209,7 @@ class FrontController
 
     }
 
-    private function _executeTheAction($controller, $controllerName, $action, $actionName, $controllerParams)
+    private function _executeTheAction($controller, $controllerName, $action, $actionName, $viewPath, $controllerParams)
     {
         $controller->setParams($controllerParams);
 
@@ -217,7 +220,8 @@ class FrontController
         $this->_bootstrap->resolveController(
             $controller,
             $controllerName,
-            $actionName
+            $actionName,
+            $viewPath
         );
 
         $controller->init();
@@ -284,6 +288,7 @@ class FrontController
             $this->_errorController,
             $controllerName,
             FrontController::EXCEPTION_HANDLER_ACTION,
+            '',
             $itIsTheErrorController
         );
 

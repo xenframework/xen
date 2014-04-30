@@ -578,7 +578,7 @@ class BootstrapBase
      * @param string    $action             The action name
      * @param bool      $error              If it is the ErrorController or not
      */
-    public function resolveController($controller, $controllerName, $action, $error = false)
+    public function resolveController($controller, $controllerName, $action, $viewPath, $error = false)
     {
         $controller->setAppStage($this->getResource('AppStage'));
         $controller->setEventSystem($this->getResource('EventSystem'));
@@ -591,8 +591,19 @@ class BootstrapBase
         $controller->setActionHelperBroker($this->getResource('ActionHelperBroker'));
         $controller->setConfig($this->getResource('Config'));
 
-        $viewPath = str_replace('/', DIRECTORY_SEPARATOR,
-            'application/views/scripts/' . lcfirst($controllerName));
+        if ($viewPath != '')
+        {
+            $viewPath = str_replace('/', DIRECTORY_SEPARATOR,
+                'application/views/scripts/' . $viewPath . '/' . lcfirst($controllerName));
+        }
+        else
+        {
+            $viewPath = str_replace('/', DIRECTORY_SEPARATOR,
+                'application/views/scripts/' . lcfirst($controllerName));
+        }
+
+
+
         $view = new Phtml($viewPath . DIRECTORY_SEPARATOR . $action . '.phtml');
         $controller->setView($view);
 
