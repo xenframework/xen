@@ -18,6 +18,7 @@ namespace xen\application\bootstrap;
 
 use xen\application\bootstrap\exception\BootstrapDependencyDatabaseNotFoundException;
 use xen\application\bootstrap\exception\BootstrapResourceNotFoundException;
+use xen\application\Cache;
 use xen\application\Router;
 use xen\config\Config;
 use xen\config\Ini;
@@ -97,6 +98,13 @@ class BootstrapBase
     private $_resources;
 
     /**
+     * @var array
+     */
+    private $_initMethods;
+
+    private $_defaultMethods;
+
+    /**
      * __construct
      *
      * Initializes the container to an empty array
@@ -104,6 +112,23 @@ class BootstrapBase
     public function __construct()
     {
         $this->_resources = array();
+        $this->_separateMethods();
+    }
+
+    private function _separateMethods()
+    {
+        $allMethods = get_class_methods($this);
+
+        $this->_defaultMethods  = array();
+        $this->_initMethods     = array();
+        $this->_minimalMethods  = array();
+
+        foreach ($allMethods as $method)
+        {
+            if (strlen($method) > 8 && substr($method, 0, 8) == '_default') $this->_defaultMethods[] = $method;
+            else if (strlen($method) > 5 && substr($method, 0, 5) == '_init' && $method != '_initRole')
+                $this->_initMethods[] = $method;
+        }
     }
 
     /**
@@ -120,13 +145,21 @@ class BootstrapBase
      */
     public function bootstrap()
     {
-        $methods = $this->_BootstrapDefaults(get_class_methods($this));
+        $this->_bootstrapDefaults();
+        $this->_bootstrapInit();
+    }
 
-        forEach($methods as $method)
-        {
-            $resourceName = ucfirst(substr($method, 5));
-            $this->addResource($resourceName, $this->$method());
-        }
+    public function minimalBootstrap()
+    {
+        $this->addResource('Session', $this->_minimalSession());
+
+        if (method_exists($this, '_initRole')) $role = $this->_initRole();
+        else $role = $this->_minimalRole();
+
+        $this->addResource('Role', $role);
+
+        $this->addResource('Cache', $this->_minimalCache());
+        $this->addResource('Router', $this->_minimalRouter());
     }
 
     /**
@@ -138,24 +171,22 @@ class BootstrapBase
      *
      * @return array The _init methods from bootstrap\Bootstrap
      */
-    private function _bootstrapDefaults($methods)
+    private function _bootstrapDefaults()
     {
-        $initMethods = array();
-
-        forEach($methods as $method)
+        forEach($this->_defaultMethods as $method)
         {
-            if (strlen($method) > 8 && substr($method, 0, 8) == '_default') {
-
-                $resourceName = ucfirst(substr($method, 8));
-                $this->addResource($resourceName, $this->$method());
-
-            } else if (strlen($method) > 5 && substr($method, 0, 5) == '_init') {
-
-                $initMethods[] = $method;
-            }
+            $resourceName = ucfirst(substr($method, 8));
+            $this->addResource($resourceName, $this->$method());
         }
+    }
 
-        return $initMethods;
+    private function _bootstrapInit()
+    {
+        forEach($this->_initMethods as $method)
+        {
+            $resourceName = ucfirst(substr($method, 5));
+            $this->addResource($resourceName, $this->$method());
+        }
     }
 
     /**
@@ -209,6 +240,23 @@ class BootstrapBase
     }
 
     /**
+     * _defaultRouter
+     *
+     * Router resource
+     *
+     * @return Router
+     */
+    protected function _minimalRouter()
+    {
+        return new Router();
+    }
+
+    protected function _minimalCache()
+    {
+        return new Cache('application/cache');
+    }
+
+    /**
      * _initRole
      *
      * The Role resource
@@ -217,7 +265,7 @@ class BootstrapBase
      *
      * @return string
      */
-    protected function _defaultRole()
+    protected function _minimalRole()
     {
         return 'guest';
     }
@@ -229,7 +277,7 @@ class BootstrapBase
      *
      * @return Session
      */
-    protected function _defaultSession()
+    protected function _minimalSession()
     {
         $session = new Session();
 
@@ -263,25 +311,13 @@ class BootstrapBase
     }
 
     /**
-     * _defaultRouter
-     *
-     * Router resource
-     *
-     * @return Router
-     */
-    protected function _defaultRouter()
-    {
-        return new Router();
-    }
-
-    /**
      * _defaultViewHelperBroker
      *
      * ViewHelperBroker resource
      *
      * It is a factory for View Helpers
      * Injects the Router
-     * 
+     *
      * @return ViewHelperBroker
      */
     protected function _defaultViewHelperBroker()
@@ -334,9 +370,11 @@ class BootstrapBase
      */
     protected function _defaultLayout()
     {
-        $layout = new Phtml($this->getResource('LayoutPath') . DIRECTORY_SEPARATOR . 'layout.phtml');
+        $layout =  new Phtml($this->getResource('LayoutPath') . DIRECTORY_SEPARATOR . 'layout.phtml');
 
+        $layout->setRouter($this->getResource('Router'));
         $layout->setViewHelperBroker($this->getResource('ViewHelperBroker'));
+        $layout->setCache($this->getResource('Cache'));
 
         return $layout;
     }
@@ -533,6 +571,7 @@ class BootstrapBase
      *      - Request
      *      - Session
      *      - Response
+     *      - Cache
      *
      * @param object    $controller         The controller to be resolved
      * @param string    $controllerName     The controller name
@@ -544,14 +583,13 @@ class BootstrapBase
         $controller->setAppStage($this->getResource('AppStage'));
         $controller->setEventSystem($this->getResource('EventSystem'));
         $controller->setRouter($this->getResource('Router'));
+        $controller->setCache($this->getResource('Cache'));
 
-        $layout =  ($error) ? clone $this->getResource('Layout') : $this->getResource('Layout');
-        $layout->setRouter($this->getResource('Router'));
+        $layout = ($error) ? clone $this->getResource('Layout') : $this->getResource('Layout');
         $controller->setLayout($layout);
 
         $controller->setActionHelperBroker($this->getResource('ActionHelperBroker'));
         $controller->setConfig($this->getResource('Config'));
-        $controller->setParams($this->getResource('Router')->getParams());
 
         $viewPath = str_replace('/', DIRECTORY_SEPARATOR,
             'application/views/scripts/' . lcfirst($controllerName));

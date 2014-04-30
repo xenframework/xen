@@ -99,7 +99,7 @@ class FrontController
         $this->_bootstrap   = $_bootstrap;
         $this->_request     = $_bootstrap->getResource('Request');
         $this->_router      = $_bootstrap->getResource('Router');
-        $this->_eventSystem = $_bootstrap->getResource('EventSystem');
+
     }
 
     /**
@@ -124,34 +124,119 @@ class FrontController
      */
     public function run()
     {
-        $url = ($this->_request->getExists('url')) ? $this->_request->get('url') : '';
-        $this->_request->setUrl($url);
-
-        $this->_router->setUrl($url);
-        $this->_router->route($this->_bootstrap->getResource('Role'));
-
-        $this->_statusCode = ($this->_router->getAction() != 'PageNotFound') ? 200 : 404;
+        $url    = $this->_request->getUrl();
+        $role   = $this->_bootstrap->getResource('Role');
+        $cache  = $this->_bootstrap->getResource('Cache');
 
         $this->_response = new Response();
         $this->_bootstrap->addResource('Response', $this->_response);
 
-        $this->_setController();
+        if ($route = $this->_router->match($url))
+        {
+            if (empty($route['allow']) || in_array($role, $route['allow']))
+            {
+                if ($route['expires'] > 0 && $content = $cache->get($url, $route['expires']))
+                {
+                    $this->_response->setStatusCode(200);
+                }
+                else
+                {
+                    $controllerName         = ucfirst($route['controller']);
+                    $controllerClassName    = 'controllers\\' . $controllerName . 'Controller';
+                    $actionName             = $route['action'];
+                    $action                 = $actionName . 'Action';
+
+                    $controller = new $controllerClassName();
+
+                    $controllerParams = $route['params'];
+
+                    $content = $this->_executeTheAction(
+                        $controller,
+                        $controllerName,
+                        $action,
+                        $actionName,
+                        $controllerParams
+                    );
+
+                    if ($route['expires'] > 0) $cache->put($url, $content);
+
+                    if (!$this->_response->getStatusCode()) $this->_response->setStatusCode(200);
+                }
+            }
+            else
+            {
+                $controller         = new ErrorController();
+                $controllerName     = 'Error';
+                $action             = 'forbiddenAction';
+                $actionName         = 'forbidden';
+
+                $controllerParams = array(
+                    'controller'    => $route['controller'],
+                    'action'        => $route['action'],
+                );
+
+                $this->_response->setStatusCode(403);
+
+                $content = $this->_executeTheAction($controller, $controllerName, $action, $actionName, $controllerParams);
+            }
+        }
+        else
+        {
+            $controller         = new ErrorController();
+            $controllerName     = 'Error';
+            $action             = 'pageNotFoundAction';
+            $actionName         = 'pageNotFound';
+
+            $controllerParams = array('url' => $url);
+
+            $this->_response->setStatusCode(404);
+
+            $content = $this->_executeTheAction(
+                $controller,
+                $controllerName,
+                $action,
+                $actionName,
+                $controllerParams
+            );
+        }
+
+        $this->_response->setContent($content);
+
+        return $this->_response->send();
+
+    }
+
+    private function _executeTheAction($controller, $controllerName, $action, $actionName, $controllerParams)
+    {
+        $controller->setParams($controllerParams);
+
+        $this->_bootstrap->bootstrap();
+
+        $this->_eventSystem = $this->_bootstrap->getResource('EventSystem');
+
+        $this->_bootstrap->resolveController(
+            $controller,
+            $controllerName,
+            $actionName
+        );
+
+        $controller->init();
+
         $this->_setErrorController();
 
         ob_start();
 
-        try {
+        try
+        {
+            $this->_eventSystem->raiseEvent('PreDispatch', array('controller' => $controller));
 
-            $this->_eventSystem->raiseEvent('PreDispatch', array('controller' => $this->_controller));
+            $content = $controller->$action();
 
-            $action = $this->_action;
+            $this->_eventSystem->raiseEvent('PostDispatch', array('controller' => $controller));
 
-            $content = $this->_controller->$action();
-
-            $this->_eventSystem->raiseEvent('PostDispatch', array('controller' => $this->_controller));
-
-        } catch (\Exception $e) {
-
+        }
+        catch (\Exception $e)
+        {
             ob_end_clean();
             ob_start();
 
@@ -160,11 +245,7 @@ class FrontController
 
         if (!isset($content)) $content = ob_get_clean();
 
-        if (!$this->_response->getStatusCode()) $this->_response->setStatusCode($this->_statusCode);
-
-        $this->_response->setContent($content);
-
-        return $this->_response->send();
+        return $content;
     }
 
     /**
@@ -187,6 +268,8 @@ class FrontController
      * _setErrorController
      *
      * Creates and prepares (calling the Bootstrap resolveController) the ErrorController injecting their dependencies
+     * and its params
+     *
      * Also set the new Exception Handler for manage all uncaught exceptions in the user application
      */
     private function _setErrorController()
@@ -207,27 +290,4 @@ class FrontController
         set_exception_handler(array($this->_errorController, $action));
     }
 
-    /**
-     * _setController
-     *
-     * Creates and prepares (calling the Bootstrap resolveController) the Controller injecting their dependencies
-     *
-     * Finally calls init method with all dependencies already injected (In the constructor dependencies are not still
-     * injected)
-     */
-    private function _setController()
-    {
-        $controller = 'controllers\\' . $this->_router->getController() . 'Controller';
-        $this->_action = $this->_router->getAction() . 'Action';
-
-        $this->_controller = new $controller();
-
-        $this->_bootstrap->resolveController(
-            $this->_controller,
-            $this->_router->getController(),
-            $this->_router->getAction()
-        );
-
-        $this->_controller->init();
-    }
 }

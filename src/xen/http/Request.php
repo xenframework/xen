@@ -366,11 +366,13 @@ class Request
     /**
      * setUrl
      *
-     * @param string $_url
+     * Filters the url and add a start slash to the url
+     *
+     * @param string $_url A route must start with a slash
      */
     public function setUrl($_url)
     {
-        $this->_url = $_url;
+        $this->_url = ($_url === '') ? '/' : '/' . filter_var($_url, FILTER_SANITIZE_URL);
     }
 
     /**

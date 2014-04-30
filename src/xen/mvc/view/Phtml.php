@@ -60,14 +60,32 @@ class Phtml
     private $_router;
 
     /**
+     * @var \xen\application\Cache
+     */
+    private $_cache;
+
+    /**
+     * @var int
+     */
+    private $_expires;
+
+    /**
+     * @var string
+     */
+    private $_cachedContent;
+
+    /**
      * __construct
      *
      * @param string $_file The .phtml file associated to this view or layout
+     * @param int $_expires Time to expire from the cache
      */
-    function __construct($_file)
+    function __construct($_file, $_expires = 0)
     {
-        $this->_file        = $_file;
-        $this->_partials    = array();
+        $this->_file            = $_file;
+        $this->_expires         = $_expires;
+        $this->_cachedContent   = '';
+        $this->_partials        = array();
     }
 
     /**
@@ -209,6 +227,54 @@ class Phtml
     }
 
     /**
+     * @param \xen\application\Cache $cache
+     */
+    public function setCache($cache)
+    {
+        $this->_cache = $cache;
+    }
+
+    /**
+     * @return \xen\application\Cache
+     */
+    public function getCache()
+    {
+        return $this->_cache;
+    }
+
+    /**
+     * @param int $expires
+     */
+    public function setExpires($expires)
+    {
+        $this->_expires = $expires;
+    }
+
+    /**
+     * @return int
+     */
+    public function getExpires()
+    {
+        return $this->_expires;
+    }
+
+    /**
+     * @param string $cachedContent
+     */
+    public function setCachedContent($cachedContent)
+    {
+        $this->_cachedContent = $cachedContent;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCachedContent()
+    {
+        return $this->_cachedContent;
+    }
+
+    /**
      * render
      *
      * In Bootstrap ViewHelperBroker is set to the very first view, the layout
@@ -222,22 +288,37 @@ class Phtml
      */
     public function render()
     {
-        $reflect = new \ReflectionObject($this);
-        $properties = $reflect->getProperties(\ReflectionProperty::IS_PUBLIC);
+        if ($this->_cachedContent != '') echo $this->_cachedContent;
+        else
+        {
+            $reflect = new \ReflectionObject($this);
+            $properties = $reflect->getProperties(\ReflectionProperty::IS_PUBLIC);
 
-        foreach ($this->getPartials() as $partial) {
+            foreach ($this->getPartials() as $partial)
+            {
+                if ($partial->getCachedContent() == '')
+                {
+                    foreach ($properties as $property)
+                    {
+                        $propertyName = $property->getName();
+                        if (!isset($partial->$propertyName)) $partial->$propertyName = $this->$propertyName;
+                    }
 
-            foreach ($properties as $property) {
-
-                $propertyName = $property->getName();
-                if (!isset($partial->$propertyName)) $partial->$propertyName = $this->$propertyName;
-
+                    $partial->setViewHelperBroker($this->_viewHelperBroker);
+                    $partial->setRouter($this->_router);
+                    $partial->setCache($this->_cache);
+                }
             }
 
-            $partial->setViewHelperBroker($this->_viewHelperBroker);
-            $partial->setRouter($this->_router);
-        }
+            ob_start();
 
-        require $this->_file;
+            require $this->_file;
+
+            $content = ob_get_contents();
+
+            ob_end_flush();
+
+            if ($this->_expires > 0) $this->_cache->put($this->_file, $content);
+        }
     }
 }

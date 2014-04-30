@@ -16,6 +16,7 @@
 
 namespace xen\mvc;
 
+use xen\application\Cache;
 use xen\mvc\exception\ControllerParamNotFoundException;
 use xen\mvc\view\Phtml;
 use xen\http\Request;
@@ -44,6 +45,7 @@ use xen\application\Router;
  *      - EventSystem
  *      - AppStage
  *      - Router
+ *      - Cache
  *
  * @package    xenframework
  * @subpackage xen\mvc
@@ -109,6 +111,11 @@ class Controller
      * @var Router
      */
     protected $_router;
+
+    /**
+     * @var Cache
+     */
+    protected $_cache;
 
     /**
      * __construct
@@ -379,6 +386,22 @@ class Controller
     public function getRouter()
     {
         return $this->_router;
+    }
+
+    /**
+     * @param \xen\application\Cache $cache
+     */
+    public function setCache($cache)
+    {
+        $this->_cache = $cache;
+    }
+
+    /**
+     * @return \xen\application\Cache
+     */
+    public function getCache()
+    {
+        return $this->_cache;
     }
 
     /**

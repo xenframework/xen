@@ -82,18 +82,6 @@ class Router
     }
 
     /**
-     * _cleanUrl
-     *
-     * Filters the url and add a start slash to the url
-     *
-     * @param string $url A route must start with a slash
-     */
-    private function _cleanUrl($url)
-    {
-        $this->_url = ($url === '') ? '/' : '/' . filter_var($url, FILTER_SANITIZE_URL);
-    }
-
-    /**
      * @param mixed $action
      */
     public function setAction($action)
@@ -146,7 +134,7 @@ class Router
      */
     public function setUrl($url)
     {
-        $this->_cleanUrl($url);
+        $this->_url = $url;
     }
 
     /**
@@ -173,61 +161,19 @@ class Router
         return $this->_params;
     }
 
-    /**
-     * route
-     *
-     * Try to match the url with one of the routes
-     *
-     *      if match        => check if it is allowed for the current role
-     *                          if not allowed  => Error controller , forbidden Action
-     *                          if allowed      => returns the controller and the action of the matched route
-     *      if not match    => Error controller, pageNotFound Action
-     *
-     * @param string $role The role to be used in ACL
-     */
-    public function route($role)
+    public function match($url)
     {
-        $found = false;
+        foreach ($this->_parsedRoutes as $route => $value)
+        {
+            if (preg_match('!^' . $route . '$!', $url, $params) == 1)
+            {
+                $value['params'] = $params;
 
-        foreach ($this->_parsedRoutes as $route => $value) {
-
-            if (preg_match('!^' . $route . '$!', $this->_url, $results) == 1) {
-
-                $found = true;
-
-                if (empty($value['allow']) || in_array($role, $value['allow'])) {
-
-                    $params = array();
-
-                    foreach ($value['params'] as $param) {
-
-                        $params[$param] = $results[$param];
-                    }
-
-                    $this->_controller  = ucfirst($value['controller']);
-                    $this->_action      = $value['action'];
-                    $this->_params      = $params;
-
-                } else {
-
-                    $this->_controller  = 'Error';
-                    $this->_action      = 'forbidden';
-                    $this->_params      = array(
-                        'controller'    => $value['controller'],
-                        'action'        => $value['action'],
-                    );
-                }
-
-                break;
+                return $value;
             }
         }
 
-        if (!$found) {
-
-            $this->_controller  = 'Error';
-            $this->_action      = 'pageNotFound';
-            $this->_params      = array('url' => $this->_url);
-        }
+        return false;
     }
 
     /**
@@ -365,11 +311,14 @@ class Router
                 throw new MalFormedRouteException($route . ' Malformed route. Be sure you set the controller,
                                                 the action and the allow sections in your routes definition');
 
+            $expires = (isset($routeValue['expires'])) ? $routeValue['expires'] : 0;
+
             $parsedRoute = array(
                 'controller'    => $routeValue['controller'],
                 'action'        => $routeValue['action'],
                 'params'        => $paramNames,
                 'allow'         => $routeValue['allow'],
+                'expires'       => $expires,
             );
 
             $pattern = str_replace('!', '\!', $pattern);

@@ -67,6 +67,16 @@ class Autoloader
     }
 
     /**
+     * addIncludePath
+     *
+     * @param string $path
+     */
+    public function addIncludePath($path)
+    {
+        $this->_includePaths[] = $path;
+    }
+
+    /**
      * register
      *
      * Creates a new entry in SPL stack

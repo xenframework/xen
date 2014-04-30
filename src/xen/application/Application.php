@@ -85,6 +85,11 @@ class Application
     private $_error;
 
     /**
+     * @var boolean
+     */
+    private $_cache;
+
+    /**
      * __construct
      *
      * Creates the Uncaught Exception handler to manage all the exceptions in the core
@@ -128,7 +133,7 @@ class Application
         $this->_bootstrap->addResource('AutoLoader', $this->_autoLoader);
         $this->_bootstrap->addResource('Request', $this->_request);
         $this->_bootstrap->addResource('Error', $this->_error);
-        $this->_bootstrap->bootstrap();
+        $this->_bootstrap->minimalBootstrap();
     }
 
     /**
@@ -139,6 +144,11 @@ class Application
      */
     public function run()
     {
+        $url = ($this->_request->getExists('url')) ? $this->_request->get('url') : '';
+        $this->_request->setUrl($url);
+
+        $this->bootstrap();
+
         $this->_frontController = new FrontController($this->_bootstrap);
         $this->_frontController->run();
     }
