@@ -1,0 +1,15 @@
+{
+    "name": "xenframework/xen",
+    "description": "PHP MVC Framework with packages",
+    "require": {
+        "doctrine/orm": "*"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ismael Trascastro",
+            "email": "itrascastro@xenframework.com"
+        }
+    ],
+    "minimum-stability": "stable"
+}
