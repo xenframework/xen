@@ -51,7 +51,7 @@ class Adapter extends \PDO
     {
         switch (strtolower($dbConfig->driver)) {
 
-            case 'mysql': //MySQL
+            case 'pdo_mysql': //MySQL
 
                 $dsn = 'mysql:host=' . $dbConfig->hostname;
 

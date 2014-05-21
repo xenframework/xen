@@ -32,6 +32,11 @@ use xen\http\exception\SessionKeyNotFoundException;
  */
 class Session 
 {
+    public function __construct()
+    {
+        $this->start();
+    }
+
     /**
      * start
      *

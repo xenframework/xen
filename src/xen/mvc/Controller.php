@@ -16,8 +16,9 @@
 
 namespace xen\mvc;
 
-use xen\application\Cache;
+use xen\kernel\Cache;
 use xen\mvc\exception\ControllerParamNotFoundException;
+use xen\mvc\exception\ControllerRedirectEmptyUrlException;
 use xen\mvc\view\Phtml;
 use xen\http\Request;
 use xen\http\Response;
@@ -25,7 +26,7 @@ use xen\http\Session;
 use xen\config\Config;
 use xen\mvc\helpers\ActionHelperBroker;
 use xen\eventSystem\EventSystem;
-use xen\application\Router;
+use xen\kernel\Router;
 
 /**
  * Class Controller
@@ -116,6 +117,10 @@ class Controller
      * @var Cache
      */
     protected $_cache;
+
+    protected $_package;
+
+    protected $_namespace;
 
     /**
      * __construct
@@ -389,7 +394,7 @@ class Controller
     }
 
     /**
-     * @param \xen\application\Cache $cache
+     * @param \xen\kernel\Cache $cache
      */
     public function setCache($cache)
     {
@@ -397,11 +402,43 @@ class Controller
     }
 
     /**
-     * @return \xen\application\Cache
+     * @return \xen\kernel\Cache
      */
     public function getCache()
     {
         return $this->_cache;
+    }
+
+    /**
+     * @param mixed $package
+     */
+    public function setPackage($package)
+    {
+        $this->_package = $package;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPackage()
+    {
+        return $this->_package;
+    }
+
+    /**
+     * @param mixed $namespace
+     */
+    public function setNamespace($namespace)
+    {
+        $this->_namespace = $namespace;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getNamespace()
+    {
+        return $this->_namespace;
     }
 
     /**
@@ -417,17 +454,36 @@ class Controller
     /**
      * _redirect
      *
-     * Creates a new petition
+     * Redirects to an url
      *
-     * @param string    $controller
-     * @param string    $action
-     * @param array     $params
+     * @param string $url
+     * @param int $httpStatusCode
+     *
+     * @throws exception\ControllerRedirectEmptyUrlException
      */
-    protected function _redirect($controller, $action, $params = array())
+    protected function _redirect($url, $httpStatusCode = 302)
     {
-        $url = $this->_router->toUrl($controller, $action, $params);
-        header('location:' . $url);
+        if (empty($url)) throw new ControllerRedirectEmptyUrlException('Cannot redirect to an empty url.');
+
+        header('location:' . $url, true, $httpStatusCode);
         exit;
+    }
+
+    /**
+     * _redirectInSeconds
+     *
+     * Redirects after given seconds
+     *
+     * @param string $url
+     * @param int $seconds
+     *
+     * @throws exception\ControllerRedirectEmptyUrlException
+     */
+    protected function _redirectInSeconds($url, $seconds = 0)
+    {
+        if (empty($url)) throw new ControllerRedirectEmptyUrlException('Cannot redirect to an empty url.');
+
+        header('refresh:' . $seconds . ';url=' . $url);
     }
 
     /**
@@ -444,7 +500,7 @@ class Controller
     {
         $controller = $this->_request->getController();
 
-        $viewPath = str_replace('/', DIRECTORY_SEPARATOR, 'application/views/scripts/');
+        $viewPath = 'application/packages/' . str_replace('\\', DIRECTORY_SEPARATOR, $this->_package) . '/views/scripts/' . implode('/', array_slice(explode('\\', $this->_namespace), 1)) . '/';
         $this->_view->setFile($viewPath . $controller . DIRECTORY_SEPARATOR . $action . '.phtml');
 
         $actionName = $action . 'Action';

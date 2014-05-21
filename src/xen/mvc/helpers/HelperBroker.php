@@ -63,6 +63,27 @@ class HelperBroker
     protected $_helperParams;
 
     /**
+     * @var string
+     */
+    protected $_package;
+
+    /**
+     * @param mixed $package
+     */
+    public function setPackage($package)
+    {
+        $this->_package = $package;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPackage()
+    {
+        return $this->_package;
+    }
+
+    /**
      * getHelper
      *
      * The Factory

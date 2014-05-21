@@ -17,7 +17,7 @@
 namespace xen\mvc\view;
 
 use xen\mvc\helpers\ViewHelperBroker;
-use xen\application\Router;
+use xen\kernel\Router;
 use xen\mvc\view\exception\PartialNotFoundException;
 
 /**
@@ -60,7 +60,7 @@ class Phtml
     private $_router;
 
     /**
-     * @var \xen\application\Cache
+     * @var \xen\kernel\Cache
      */
     private $_cache;
 
@@ -227,7 +227,7 @@ class Phtml
     }
 
     /**
-     * @param \xen\application\Cache $cache
+     * @param \xen\kernel\Cache $cache
      */
     public function setCache($cache)
     {
@@ -235,7 +235,7 @@ class Phtml
     }
 
     /**
-     * @return \xen\application\Cache
+     * @return \xen\kernel\Cache
      */
     public function getCache()
     {
@@ -314,11 +314,11 @@ class Phtml
 
             require $this->_file;
 
-            $content = ob_get_contents();
-
-            ob_end_flush();
+            $content = ob_get_clean();
 
             if ($this->_expires > 0) $this->_cache->put($this->_file, $content);
+
+            echo $content;
         }
     }
 }

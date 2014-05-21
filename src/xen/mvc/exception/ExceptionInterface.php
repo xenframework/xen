@@ -16,6 +16,6 @@
 
 namespace xen\mvc\exception;
 
-interface ExceptionInterface extends \xen\application\error\ExceptionInterface
+interface ExceptionInterface extends \xen\kernel\error\ExceptionInterface
 {
 }

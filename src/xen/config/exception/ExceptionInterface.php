@@ -14,8 +14,8 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\application\config\exception;
+namespace xen\kernel\config\exception;
 
-interface ExceptionInterface extends \xen\application\error\ExceptionInterface
+interface ExceptionInterface extends \xen\kernel\error\ExceptionInterface
 {
 }

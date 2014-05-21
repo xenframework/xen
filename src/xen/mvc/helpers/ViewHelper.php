@@ -16,7 +16,7 @@
 
 namespace xen\mvc\helpers;
 
-use xen\application\Router;
+use xen\kernel\Router;
 
 /**
  * Class ViewHelper
@@ -83,7 +83,7 @@ abstract class ViewHelper
     /**
      * getRouter
      *
-     * @return \xen\application\Router
+     * @return \xen\kernel\Router
      */
     public function getRouter()
     {
@@ -93,7 +93,7 @@ abstract class ViewHelper
     /**
      * setRouter
      *
-     * @param \xen\application\Router $router
+     * @param \xen\kernel\Router $router
      */
     public function setRouter($router)
     {

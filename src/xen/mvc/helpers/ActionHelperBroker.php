@@ -36,12 +36,12 @@ class ActionHelperBroker extends HelperBroker
      *
      * set the namespaces and the paths for the Action Helpers
      */
-    public function __construct()
+    public function __construct($_package)
     {
         $this->_libNamespace = 'xen\\mvc\\helpers\\actionHelpers\\';
-        $this->_appNamespace = 'controllers\\helpers\\';
-        $this->_libPath      = str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/mvc/helpers/actionHelpers/');
-        $this->_appPath      = str_replace('/', DIRECTORY_SEPARATOR, 'application/controllers/helpers/');
+        $this->_appNamespace = $_package . '\\controllers\\helpers\\';
+        $this->_libPath      = 'vendor/xen/mvc/helpers/actionHelpers/';
+        $this->_appPath      = 'application/packages/' . str_replace('\\', DIRECTORY_SEPARATOR, $_package) . '/controllers/helpers/';
     }
 
     public function getHelper($helper, $params=array())

@@ -16,7 +16,7 @@
 
 namespace xen\mvc\helpers;
 
-use xen\application\Router;
+use xen\kernel\Router;
 
 /**
  * Class ViewHelperBroker
@@ -43,18 +43,18 @@ class ViewHelperBroker extends HelperBroker
      *
      * set the namespaces and the paths for the View Helpers
      */
-    public function __construct()
+    public function __construct($_package)
     {
         $this->_libNamespace = 'xen\\mvc\\helpers\\viewHelpers\\';
-        $this->_appNamespace = 'views\\helpers\\';
-        $this->_libPath      = str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/mvc/helpers/viewHelpers/');
-        $this->_appPath      = str_replace('/', DIRECTORY_SEPARATOR, 'application/views/helpers/');
+        $this->_appNamespace = $_package . '\\views\\helpers\\';
+        $this->_libPath      = 'vendor/xen/mvc/helpers/viewHelpers/';
+        $this->_appPath      = 'application/packages/' . str_replace('\\', DIRECTORY_SEPARATOR, $_package) . '/views/helpers/';
     }
 
     /**
      * getRouter
      *
-     * @return \xen\application\Router
+     * @return \xen\kernel\Router
      */
     public function getRouter()
     {
@@ -64,7 +64,7 @@ class ViewHelperBroker extends HelperBroker
     /**
      * setRouter
      *
-     * @param \xen\application\Router $router
+     * @param \xen\kernel\Router $router
      */
     public function setRouter($router)
     {
