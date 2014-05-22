@@ -1,9 +1,9 @@
 {
     "name": "xenframework/xen",
-    "description": "PHP MVC Framework with packages",
-    "require": {
-        "doctrine/orm": "*"
-    },
+    "type": "library",
+    "description": "xenframework - PHP MVC Framework with packages",
+    "keywords": ["framework", "php"],
+    "homepage": "http://www.xenframework.com",
     "license": "MIT",
     "authors": [
         {
@@ -11,5 +11,14 @@
             "email": "itrascastro@xenframework.com"
         }
     ],
-    "minimum-stability": "stable"
+    "require": {
+        "php": ">=5.3.3",
+        "doctrine/orm": "*"
+    },
+    "minimum-stability": "dev",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.0.0-dev"
+        }
+    }
 }
