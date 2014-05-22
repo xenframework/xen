@@ -16,7 +16,7 @@
 
 namespace xen\kernel\bootstrap\exception;
 
-require 'vendor/xen/kernel/error/ExceptionInterface.php';
+require 'vendor/xenframework/xen/src/xen/kernel/error/ExceptionInterface.php';
 
 interface ExceptionInterface extends \xen\kernel\error\ExceptionInterface
 {

@@ -16,7 +16,7 @@
 
 namespace xen\db\doctrine;
 
-require_once __DIR__ . '/../../../../vendor/autoload.php';
+require_once __DIR__ . '/../../../../../../../vendor/autoload.php';
 
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
@@ -30,7 +30,7 @@ class DoctrineBootstrap
     {
         $packagePath = str_replace('\\', DIRECTORY_SEPARATOR, $package);
 
-        $paths = array(__DIR__ . '/../../../../application/packages/' . $packagePath . '/models/entities');
+        $paths = array(__DIR__ . '/../../../../../../../application/packages/' . $packagePath . '/models/entities');
         $isDevMode = ($applicationMode == 'development') ? true : false;
 
         $dbParams = array(
@@ -56,7 +56,7 @@ class DoctrineBootstrap
         AnnotationRegistry::registerLoader('class_exists');
         $config->setMetadataDriverImpl($driver);
 
-        $proxyDir       = __DIR__ . '/../../../../application/packages/' . $packagePath . '/models/proxies';
+        $proxyDir       = __DIR__ . '/../../../../../../../application/packages/' . $packagePath . '/models/proxies';
         $proxyNamespace = $package . '\\models\\proxies\\';
 
         $config->setProxyDir($proxyDir);

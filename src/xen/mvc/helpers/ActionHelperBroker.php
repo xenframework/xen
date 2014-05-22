@@ -40,7 +40,7 @@ class ActionHelperBroker extends HelperBroker
     {
         $this->_libNamespace = 'xen\\mvc\\helpers\\actionHelpers\\';
         $this->_appNamespace = $_package . '\\controllers\\helpers\\';
-        $this->_libPath      = 'vendor/xen/mvc/helpers/actionHelpers/';
+        $this->_libPath      = 'vendor/xenframework/xen/src/xen/mvc/helpers/actionHelpers/';
         $this->_appPath      = 'application/packages/' . str_replace('\\', DIRECTORY_SEPARATOR, $_package) . '/controllers/helpers/';
     }
 

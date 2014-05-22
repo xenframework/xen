@@ -16,9 +16,6 @@
 
 namespace xen\kernel\bootstrap;
 
-require 'vendor/xen/kernel/bootstrap/exception/AutoloaderClassNameNotFoundException.php';
-use xen\kernel\bootstrap\exception\AutoloaderClassNameNotFoundException;
-
 /**
  * Class Autoloader
  *
@@ -112,11 +109,12 @@ class Autoloader
      * If the test is avoided and there are more than one directories in the includePath, _autoload will always choose
      * the first one, even if the file is in another directory
      *
+     * No exception can be throw here because others autoloaders can be used if this one fails (i.e. doctrine)
+     *
      * Directory structure has to be the same as the Namespace
      *
      * @param string $className The class to be instantiated
      *
-     * @throws exception\AutoloaderClassNameNotFoundException
      * @return bool true if the file exists in the path otherwise false
      */
     private function _autoload($className)
@@ -130,7 +128,7 @@ class Autoloader
             if ($this->_require($attemptFile)) return true;
         }
 
-        throw new AutoloaderClassNameNotFoundException('Autoloader Class Name ' . $className . ' not found in Autoloader paths. Remember controller names are case sensitive also in routes.');
+        return false;
     }
 
     /**

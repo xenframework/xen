@@ -20,8 +20,8 @@ use xen\kernel\bootstrap\Autoloader;
 use xen\kernel\error\Error;
 use xen\http\Request;
 
-require 'vendor/xen/kernel/error/Error.php';
-require 'vendor/xen/kernel/bootstrap/Autoloader.php';
+require 'vendor/xenframework/xen/src/xen/kernel/error/Error.php';
+require 'vendor/xenframework/xen/src/xen/kernel/bootstrap/Autoloader.php';
 
 /**
  * Class Application
@@ -117,12 +117,12 @@ class Application
     /**
      * _autoLoader
      *
-     * Enables auto load for 'application', 'application/packages' and 'vendor' directories
+     * Enables auto load for 'application', 'application/packages', 'vendor/xenframework/xen/src' and 'vendor' directories
      * It is done in the same autoloader because it is more efficient (instead of one autoloader per directory)
      */
     private function _autoLoader()
     {
-        $this->_autoLoader = new Autoloader(array('application', 'application/packages', 'vendor'));
+        $this->_autoLoader = new Autoloader(array('application', 'application/packages', 'vendor', 'vendor/xenframework/xen/src'));
         $this->_autoLoader->register();
     }
 

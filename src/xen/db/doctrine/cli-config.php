@@ -19,7 +19,7 @@ require 'DoctrineBootstrap.php';
 use xen\db\doctrine\DoctrineBootstrap;
 
 $config     = require 'config.php';
-$databases  = require __DIR__ . '/../../../../application/configs/databases.php';
+$databases  = require __DIR__ . '/../../../../../../../application/configs/databases.php';
 
 $driver     = $databases[$config['db']]['driver'];
 $username   = $databases[$config['db']]['username'];

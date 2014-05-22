@@ -47,7 +47,7 @@ class ViewHelperBroker extends HelperBroker
     {
         $this->_libNamespace = 'xen\\mvc\\helpers\\viewHelpers\\';
         $this->_appNamespace = $_package . '\\views\\helpers\\';
-        $this->_libPath      = 'vendor/xen/mvc/helpers/viewHelpers/';
+        $this->_libPath      = 'vendor/xenframework/xen/src/xen/mvc/helpers/viewHelpers/';
         $this->_appPath      = 'application/packages/' . str_replace('\\', DIRECTORY_SEPARATOR, $_package) . '/views/helpers/';
     }
 

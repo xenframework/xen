@@ -18,7 +18,7 @@ namespace xen\kernel\error;
 
 use xen\http\Response;
 
-require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/http/Response.php');
+require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xenframework/xen/src/xen/http/Response.php');
 
 /**
  * Class Error
