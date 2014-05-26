@@ -219,11 +219,11 @@ class Router
     {
         foreach ($params as $key => $value)
         {
-            $exists             = strpos(preg_replace('/\s+/', '', $route), '{' . $key . '}');
-            $hasConstraints     = array_key_exists($key, $constraints);
-            $matchConstraints   = preg_match('!' . preg_replace('/\s+/', '', $constraints[$key]) . '!', $value);
-
-            if ( $exists === false || ($hasConstraints && $matchConstraints == 0)) return false;
+            if ( strpos(preg_replace('/\s+/', '', $route), '{' . $key . '}') === false ||
+                (array_key_exists($key, $constraints) &&
+                    preg_match('!' . preg_replace('/\s+/', '', $constraints[$key]) . '!', $value) == 0)
+            )
+                return false;
         }
 
         return true;
