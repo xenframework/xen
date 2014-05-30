@@ -15,5 +15,10 @@
         "php": ">=5.3.3",
         "doctrine/orm": "*"
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.0.0.x-dev"
+        }
+    }
 }
