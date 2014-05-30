@@ -85,7 +85,7 @@ class Autoloader
      */
     public function register()
     {
-        return spl_autoload_register(array($this,'_autoload'));
+        return spl_autoload_register(array($this,'autoload'));
     }
 
     /**
@@ -97,16 +97,16 @@ class Autoloader
      */
     public function unregister()
     {
-        return spl_autoload_unregister(array($this,'_autoload'));
+        return spl_autoload_unregister(array($this,'autoload'));
     }
 
     /**
-     * _autoload
+     * autoload
      *
      * This function will be used by spl_autoload_register when a new $className instance is created
      *
      * It is mandatory to test if the file exists because require does not return any value.
-     * If the test is avoided and there are more than one directories in the includePath, _autoload will always choose
+     * If the test is avoided and there are more than one directories in the includePath, autoload will always choose
      * the first one, even if the file is in another directory
      *
      * No exception can be throw here because others autoloaders can be used if this one fails (i.e. doctrine)
@@ -117,7 +117,7 @@ class Autoloader
      *
      * @return bool true if the file exists in the path otherwise false
      */
-    private function _autoload($className)
+    public function autoload($className)
     {
         $file = str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
 
