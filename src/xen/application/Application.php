@@ -14,26 +14,23 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\kernel;
+namespace xen\application;
 
-use xen\kernel\bootstrap\Autoloader;
-use xen\kernel\error\Error;
+use bootstrap\Bootstrap;
+use xen\application\bootstrap\Autoloader;
+use xen\application\error\Error;
 use xen\http\Request;
 
-require 'vendor/xenframework/xen/src/xen/kernel/error/Error.php';
-require 'vendor/xenframework/xen/src/xen/kernel/bootstrap/Autoloader.php';
+require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/application/error/Error.php');
+require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/application/bootstrap/Autoloader.php');
 
 /**
  * Class Application
  *
- * Does an initial setUp before calling the Front Controller
- *
- *      - kernel exceptions management
- *      - AutoLoading
- *      - Initializes the container
+ * Description
  *
  * @package    xenframework
- * @subpackage xen\kernel
+ * @subpackage xen\application
  * @author     Ismael Trascastro <itrascastro@xenframework.com>
  * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
  * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
@@ -68,9 +65,9 @@ class Application
     private $_autoLoader;
 
     /**
-     * @var Dic
+     * @var Bootstrap
      */
-    private $_container;
+    private $_bootstrap;
 
     /**
      * @var FrontController
@@ -88,9 +85,9 @@ class Application
     private $_error;
 
     /**
-     * @var array
+     * @var boolean
      */
-    private $_packages;
+    private $_cache;
 
     /**
      * __construct
@@ -98,9 +95,8 @@ class Application
      * Creates the Uncaught Exception handler to manage all the exceptions in the core
      * Creates the Error
      * Defines the application state
-     * Calls the autoloader
+     * Call the autoloader
      * Creates the Request object from Globals
-     * Loads the active packages
      *
      * @param string $_appStage {DEVELOPMENT, TEST, PRODUCTION} Defines the application state
      */
@@ -110,45 +106,40 @@ class Application
         $this->_appStage = $_appStage;
         $this->_autoLoader();
         $this->_request = Request::createFromGlobals();
-        $this->_packages = require 'application/configs/packages.php';
-        array_unshift($this->_packages, 'main');
     }
 
     /**
      * _autoLoader
      *
-     * Enables auto load for 'application', 'application/packages', 'vendor/xenframework/xen/src' and 'vendor' directories
+     * Enables auto load for 'application' and 'vendor' directories
      * It is done in the same autoloader because it is more efficient (instead of one autoloader per directory)
      */
     private function _autoLoader()
     {
-        $this->_autoLoader = new Autoloader(array('application', 'application/packages', 'vendor', 'vendor/xenframework/xen/src'));
+        $this->_autoLoader = new Autoloader(array('application', 'vendor'));
         $this->_autoLoader->register();
     }
 
     /**
      * bootstrap
      *
-     * The Bootstrap object is created with 5 initial resources (Packages, AppStage, Autoloader, Request, Error)
-     * and then the container is initialized with the minimum resources for a cached response (Session, Role, Cache, Router)
+     * The Bootstrap object is created with 4 initial resources (appStage, Autoloader, Request, Error) and then we
+     * bootstrap the application
      */
-    private function _initDependencyInjectionContainer()
+    public function bootstrap()
     {
-        $this->_container = new Dic();
-
-        $this->_container->addResource('Packages', $this->_packages);
-        $this->_container->addResource('AppStage', $this->_appStage);
-        $this->_container->addResource('AutoLoader', $this->_autoLoader);
-        $this->_container->addResource('Request', $this->_request);
-        $this->_container->addResource('Error', $this->_error);
-
-        $this->_container->_initTheContainer();
+        $this->_bootstrap = new Bootstrap();
+        $this->_bootstrap->addResource('AppStage', $this->_appStage);
+        $this->_bootstrap->addResource('AutoLoader', $this->_autoLoader);
+        $this->_bootstrap->addResource('Request', $this->_request);
+        $this->_bootstrap->addResource('Error', $this->_error);
+        $this->_bootstrap->minimalBootstrap();
     }
 
     /**
      * run
      *
-     * FrontController is created with an initialized Container as a Service Locator
+     * FrontController is created with the Bootstrap as a Service Locator
      * and then the application execution starts with FrontController run method
      */
     public function run()
@@ -156,9 +147,9 @@ class Application
         $url = ($this->_request->getExists('url')) ? $this->_request->get('url') : '';
         $this->_request->setUrl($url);
 
-        $this->_initDependencyInjectionContainer();
+        $this->bootstrap();
 
-        $this->_frontController = new FrontController($this->_container);
+        $this->_frontController = new FrontController($this->_bootstrap);
         $this->_frontController->run();
     }
 }

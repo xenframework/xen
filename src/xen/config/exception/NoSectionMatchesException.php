@@ -14,7 +14,7 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\kernel\config\exception;
+namespace xen\application\config\exception;
 
 class NoSectionMatchesException extends \Exception implements ExceptionInterface
 {

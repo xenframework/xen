@@ -14,7 +14,7 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\kernel\bootstrap;
+namespace xen\application\bootstrap;
 
 /**
  * Class Autoloader
@@ -26,7 +26,7 @@ namespace xen\kernel\bootstrap;
  * directories registered
  *
  * @package    xenframework
- * @subpackage xen\kernel\bootstrap
+ * @subpackage xen\application\bootstrap
  * @author     Ismael Trascastro <itrascastro@xenframework.com>
  * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
  * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
@@ -85,7 +85,7 @@ class Autoloader
      */
     public function register()
     {
-        return spl_autoload_register(array($this,'autoload'));
+        return spl_autoload_register(array($this,'_autoload'));
     }
 
     /**
@@ -97,19 +97,17 @@ class Autoloader
      */
     public function unregister()
     {
-        return spl_autoload_unregister(array($this,'autoload'));
+        return spl_autoload_unregister(array($this,'_autoload'));
     }
 
     /**
-     * autoload
+     * _autoload
      *
      * This function will be used by spl_autoload_register when a new $className instance is created
      *
      * It is mandatory to test if the file exists because require does not return any value.
-     * If the test is avoided and there are more than one directories in the includePath, autoload will always choose
+     * If the test is avoided and there are more than one directories in the includePath, _autoload will always choose
      * the first one, even if the file is in another directory
-     *
-     * No exception can be throw here because others autoloaders can be used if this one fails (i.e. doctrine)
      *
      * Directory structure has to be the same as the Namespace
      *
@@ -117,15 +115,18 @@ class Autoloader
      *
      * @return bool true if the file exists in the path otherwise false
      */
-    public function autoload($className)
+    private function _autoload($className)
     {
         $file = str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
 
-        foreach($this->_includePaths as $includePath)
-        {
+        foreach($this->_includePaths as $includePath) {
+
             $attemptFile = $includePath . DIRECTORY_SEPARATOR . $file;
 
-            if ($this->_require($attemptFile)) return true;
+            if ($this->_require($attemptFile)) {
+
+                return true;
+            }
         }
 
         return false;
@@ -142,10 +143,9 @@ class Autoloader
      */
     private function _require($file)
     {
-        if (file_exists($file))
-        {
-            require $file;
+        if (file_exists($file)) {
 
+            require $file;
             return true;
         }
 

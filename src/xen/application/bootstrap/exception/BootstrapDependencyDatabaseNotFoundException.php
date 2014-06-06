@@ -14,8 +14,8 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\kernel\exception;
+namespace xen\application\bootstrap\exception;
 
-class CacheUnableToOpenFileException extends \Exception implements ExceptionInterface
+class BootstrapDependencyDatabaseNotFoundException extends \Exception implements ExceptionInterface
 {
 }

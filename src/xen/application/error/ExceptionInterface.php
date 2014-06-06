@@ -14,8 +14,8 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\kernel\exception;
+namespace xen\application\error;
 
-class CacheDirNotWritableException extends \Exception implements ExceptionInterface
+interface ExceptionInterface
 {
 }

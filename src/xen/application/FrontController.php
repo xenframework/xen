@@ -14,9 +14,10 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\kernel;
+namespace xen\application;
 
-use main\Bootstrap;
+use bootstrap\Bootstrap;
+use controllers\ErrorController;
 use xen\eventSystem\EventSystem;
 use xen\http\Request;
 use xen\http\Response;
@@ -27,7 +28,7 @@ use xen\http\Response;
  * Selects the Controller and the Action to manage the Request. It also resolves the controller dependencies
  *
  * @package    xenframework
- * @subpackage xen\kernel
+ * @subpackage xen\application
  * @author     Ismael Trascastro <itrascastro@xenframework.com>
  * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
  * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
@@ -42,12 +43,7 @@ class FrontController
     const EXCEPTION_HANDLER_ACTION = 'exceptionHandler';
 
     /**
-     * @var Dic From the Front Controller is used as a Service Locator. In the controllers as a DiC
-     */
-    private $_container;
-
-    /**
-     * @var mixed Running Package bootstrap
+     * @var \bootstrap\Bootstrap From here is used as a Service Locator
      */
     private $_bootstrap;
 
@@ -62,6 +58,16 @@ class FrontController
     private $_router;
 
     /**
+     * @var object The controller who handles the Request. It is returned by the router
+     */
+    private $_controller;
+
+    /**
+     * @var string The action who handles the Request. It is returned by the router
+     */
+    private $_action;
+
+    /**
      * @var object The controller who manages the Error
      */
     private $_errorController;
@@ -70,6 +76,11 @@ class FrontController
      * @var Response The Response
      */
     private $_response;
+
+    /**
+     * @var int The Status Code of the Response
+     */
+    private $_statusCode;
 
     /**
      * @var EventSystem Used to raise events in the FrontController
@@ -81,15 +92,13 @@ class FrontController
      *
      * Gets the Request from the Bootstrap
      *
-     * @param Dic $_container
+     * @param Bootstrap $_bootstrap
      */
-    public function __construct(Dic $_container)
+    public function __construct(Bootstrap $_bootstrap)
     {
-        $this->_container   = $_container;
-        $this->_request     = $_container->getResource('Request');
-        $this->_router      = $_container->getResource('Router');
-
-        $this->_router->setPackages($this->_container->getResource('Packages'));
+        $this->_bootstrap   = $_bootstrap;
+        $this->_request     = $_bootstrap->getResource('Request');
+        $this->_router      = $_bootstrap->getResource('Router');
 
     }
 
@@ -116,41 +125,33 @@ class FrontController
     public function run()
     {
         $url    = $this->_request->getUrl();
-        $cache  = $this->_container->getResource('Cache');
+        $role   = $this->_bootstrap->getResource('Role');
+        $cache  = $this->_bootstrap->getResource('Cache');
 
         $this->_response = new Response();
-        $this->_container->addResource('Response', $this->_response);
+        $this->_bootstrap->addResource('Response', $this->_response);
 
         if ($route = $this->_router->match($url))
         {
-            $bootstrapClassName = $route['package'] . '\\' . 'Bootstrap';
-            $this->_bootstrap = new $bootstrapClassName($route['package']);
-            $this->_bootstrap->setContainer($this->_container);
-            $this->_bootstrap->minimalBootstrap();
-
-            $role   = $this->_container->getResource('Role');
-
             if (empty($route['allow']) || in_array($role, $route['allow']))
             {
-                if ($route['cache']['expires'] > 0 && (empty($route['cache']['roles']) || in_array($role, $route['cache']['roles'])) && $content = $cache->get($url, $route['cache']['expires']))
+                if ($route['expires'] > 0 && $content = $cache->get($url, $route['expires']))
                 {
                     $this->_response->setStatusCode(200);
                 }
                 else
                 {
-                    $package                = $route['package'];
-                    $namespace              = $route['namespace'];
                     $controllerName         = ucfirst($route['controller']);
-                    $controllerClassName    = $route['package'] . '\\' . $route['namespace'] . '\\' . $controllerName . 'Controller';
+                    $controllerClassName    = $route['namespace'] . '\\' . $controllerName . 'Controller';
                     $actionName             = $route['action'];
                     $action                 = $actionName . 'Action';
-                    $viewPath               = implode('/', array_slice(explode('\\', $route['namespace']), 1));
-                    $controller             = new $controllerClassName();
-                    $controllerParams       = $route['params'];
+                    $viewPath = implode('/', array_slice(explode('\\', $route['namespace']), 1));
+
+                    $controller = new $controllerClassName();
+
+                    $controllerParams = $route['params'];
 
                     $content = $this->_executeTheAction(
-                        $package,
-                        $namespace,
                         $controller,
                         $controllerName,
                         $action,
@@ -159,47 +160,40 @@ class FrontController
                         $controllerParams
                     );
 
-                    if ($route['cache']['expires'] > 0) $cache->put($url, $content);
+                    if ($route['expires'] > 0) $cache->put($url, $content);
 
                     if (!$this->_response->getStatusCode()) $this->_response->setStatusCode(200);
                 }
             }
             else
             {
-                $namespace              = 'controllers';
-                $controllerClassName    = 'main\\controllers\\ErrorController';
-                $controller             = new $controllerClassName();
-                $controllerName         = 'Error';
-                $action                 = 'forbiddenAction';
-                $actionName             = 'forbidden';
+                $controller         = new ErrorController();
+                $controllerName     = 'Error';
+                $action             = 'forbiddenAction';
+                $actionName         = 'forbidden';
 
                 $controllerParams = array(
-                    'route'    => $url,
+                    'controller'    => $route['controller'],
+                    'action'        => $route['action'],
                 );
 
                 $this->_response->setStatusCode(403);
 
-                $content = $this->_executeTheAction('main', $namespace, $controller, $controllerName, $action, $actionName, '', $controllerParams);
+                $content = $this->_executeTheAction($controller, $controllerName, $action, $actionName, '', $controllerParams);
             }
         }
         else
         {
-            $this->_bootstrap = new Bootstrap('main');
-            $this->_bootstrap->setContainer($this->_container);
+            $controller         = new ErrorController();
+            $controllerName     = 'Error';
+            $action             = 'pageNotFoundAction';
+            $actionName         = 'pageNotFound';
 
-            $namespace              = 'controllers';
-            $controllerClassName    = 'main\\controllers\\ErrorController';
-            $controller             = new $controllerClassName();
-            $controllerName         = 'Error';
-            $action                 = 'pageNotFoundAction';
-            $actionName             = 'pageNotFound';
-            $controllerParams       = array('url' => $url);
+            $controllerParams = array('url' => $url);
 
             $this->_response->setStatusCode(404);
 
             $content = $this->_executeTheAction(
-                'main',
-                $namespace,
                 $controller,
                 $controllerName,
                 $action,
@@ -215,20 +209,15 @@ class FrontController
 
     }
 
-    private function _executeTheAction($package, $namespace, $controller, $controllerName, $action, $actionName, $viewPath, $controllerParams)
+    private function _executeTheAction($controller, $controllerName, $action, $actionName, $viewPath, $controllerParams)
     {
         $controller->setParams($controllerParams);
 
-        $this->_container->addResource('Package', $package);
-
         $this->_bootstrap->bootstrap();
 
-        $this->_eventSystem = $this->_container->getResource('EventSystem');
-        $this->_eventSystem->setPackage($package);
+        $this->_eventSystem = $this->_bootstrap->getResource('EventSystem');
 
-        $this->_container->resolveController(
-            $package,
-            $namespace,
+        $this->_bootstrap->resolveController(
             $controller,
             $controllerName,
             $actionName,
@@ -252,16 +241,13 @@ class FrontController
         }
         catch (\Exception $e)
         {
-            while (ob_get_contents()) ob_end_clean(); //cleaning and closing all nested open buffers
-
+            ob_end_clean();
             ob_start();
 
             $content = $this->_exceptionHandler($e);
         }
 
-        if (!isset($content)) $content = ob_get_contents();
-
-        ob_end_clean();
+        if (!isset($content)) $content = ob_get_clean();
 
         return $content;
     }
@@ -277,7 +263,7 @@ class FrontController
     {
         $this->_errorController->setParams(array('e' => $e));
         $action = FrontController::EXCEPTION_HANDLER_ACTION . 'Action';
-        $this->_response->setStatusCode(500);
+        $this->_statusCode = 500;
 
         return $this->_errorController->$action();
     }
@@ -292,16 +278,13 @@ class FrontController
      */
     private function _setErrorController()
     {
-        $errorClassName = 'main\\controllers\\ErrorController';
-        $this->_errorController = new $errorClassName();
+        $this->_errorController = new ErrorController();
         $action = FrontController::EXCEPTION_HANDLER_ACTION . 'Action';
 
-        $itIsTheErrorController     = true;
-        $controllerName             = 'error';
+        $itIsTheErrorController = true;
+        $controllerName = 'error';
 
-        $this->_container->resolveController(
-            'main',
-            'controllers',
+        $this->_bootstrap->resolveController(
             $this->_errorController,
             $controllerName,
             FrontController::EXCEPTION_HANDLER_ACTION,

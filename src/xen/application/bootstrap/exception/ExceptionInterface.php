@@ -14,8 +14,8 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\kernel\bootstrap\exception;
+namespace xen\application\bootstrap\exception;
 
-class ContainerDependencyDatabaseNotFoundException extends \Exception implements ExceptionInterface
+interface ExceptionInterface extends \xen\application\error\ExceptionInterface
 {
 }

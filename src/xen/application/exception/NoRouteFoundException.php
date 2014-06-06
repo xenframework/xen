@@ -14,8 +14,8 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\kernel\error;
+namespace xen\application\exception;
 
-interface ExceptionInterface
+class NoRouteFoundException extends \Exception implements ExceptionInterface
 {
 }

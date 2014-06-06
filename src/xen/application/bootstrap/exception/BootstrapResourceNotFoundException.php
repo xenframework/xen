@@ -14,9 +14,8 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\kernel\bootstrap\exception;
+namespace xen\application\bootstrap\exception;
 
-
-class ContainerResourceNotFoundException extends \Exception implements ExceptionInterface
+class BootstrapResourceNotFoundException extends \Exception implements ExceptionInterface
 {
 }

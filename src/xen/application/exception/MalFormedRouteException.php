@@ -14,8 +14,8 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\kernel\exception;
+namespace xen\application\exception;
 
-interface ExceptionInterface extends \xen\kernel\error\ExceptionInterface
+class MalFormedRouteException extends \Exception implements ExceptionInterface
 {
 }

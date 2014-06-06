@@ -40,8 +40,6 @@ class EventSystem
      */
     private $_handlers;
 
-    private $_package;
-
     /**
      * __construct
      *
@@ -50,22 +48,6 @@ class EventSystem
     public function __construct($_handlers = array())
     {
         $this->_handlers = $_handlers;
-    }
-
-    /**
-     * @param mixed $package
-     */
-    public function setPackage($package)
-    {
-        $this->_package = $package;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPackage()
-    {
-        return $this->_package;
     }
 
     /**
@@ -89,9 +71,9 @@ class EventSystem
             if ($handler->handles($event)) $handler->handle($params);
         }
 
-        if (file_exists('application/packages/' . str_replace('\\', DIRECTORY_SEPARATOR, $this->_package) . '/eventHandlers/' . $event . '.php')) {
+        if (file_exists('application/eventHandlers/' . $event . '.php')) {
 
-            $handlerClassName = $this->_package . '\\eventHandlers\\' . $event;
+            $handlerClassName = 'eventHandlers\\' . $event;
             $handler = new $handlerClassName();
             $handler->handle($params);
         }

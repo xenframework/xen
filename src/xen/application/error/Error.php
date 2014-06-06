@@ -14,11 +14,11 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\kernel\error;
+namespace xen\application\error;
 
 use xen\http\Response;
 
-require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xenframework/xen/src/xen/http/Response.php');
+require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xen/http/Response.php');
 
 /**
  * Class Error
@@ -26,7 +26,7 @@ require str_replace('/', DIRECTORY_SEPARATOR, 'vendor/xenframework/xen/src/xen/h
  * Manages all the Uncaught Exception in the core and returns an Error response
  *
  * @package    xenframework
- * @subpackage xen\kernel
+ * @subpackage xen\application
  * @author     Ismael Trascastro <itrascastro@xenframework.com>
  * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
  * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
@@ -74,14 +74,10 @@ class Error
      *
      *      get_class($e) where ExceptionInterface $e
      *
-     *          - 'xen\kernel\bootstrap\exception\ContainerResourceNotFoundException'
-     *          - 'xen\kernel\bootstrap\exception\ContainerDependencyDatabaseNotFoundException'
-     *          - 'xen\kernel\exception\MalFormedRouteException'
-     *          - 'xen\kernel\exception\NoRouteFoundException'
-     *          - 'xen\kernel\exception\CacheUnableToOpenFileException'
-     *          - 'xen\kernel\exception\CacheEmptyFileException'
-     *          - 'xen\kernel\exception\CacheDirNotWritableException'
-     *          - 'xen\kernel\exception\CacheUnableToLockFileException'
+     *          - 'xen\application\bootstrap\exception\BootstrapResourceNotFoundException'
+     *          - 'xen\application\bootstrap\exception\BootstrapDependencyDatabaseNotFoundException'
+     *          - 'xen\application\exception\MalFormedRouteException'
+     *          - 'xen\application\exception\NoRouteFoundException'
      *          - 'xen\config\exception\NoSectionMatchesException'
      *          - 'xen\db\exception\MySqlDbConnectException'
      *          - 'xen\db\exception\PostgreSqlDbConnectException'
@@ -89,7 +85,6 @@ class Error
      *          - 'xen\mvc\helpers\exception\HelperNotFoundException'
      *          - 'xen\mvc\exception\ControllerParamNotFoundException'
      *          - 'xen\mvc\view\exception\PartialNotFoundException'
-     *          - 'xen\mvc\exception\ControllerRedirectEmptyUrlException'
      *          - 'xen\http\exception\GlobalGetKeyNotFoundException'
      *          - 'xen\http\exception\GlobalPostKeyNotFoundException'
      *          - 'xen\http\exception\RequestServerKeyNotFoundException'

@@ -14,10 +14,8 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\mvc\exception;
+namespace xen\application\exception;
 
-
-class ControllerRedirectEmptyUrlException extends \Exception implements ExceptionInterface
+interface ExceptionInterface extends \xen\application\error\ExceptionInterface
 {
-
-} 
+}

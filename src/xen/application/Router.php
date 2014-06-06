@@ -14,21 +14,21 @@
  * file that was distributed with this source code.
  */
 
-namespace xen\kernel;
-
-use xen\kernel\exception\MalFormedRouteException;
-use xen\kernel\exception\NoRouteFoundException;
+namespace xen\application;
+use xen\application\exception\MalFormedRouteException;
+use xen\application\exception\NoRouteFoundException;
 
 /**
  * Class Router
  *
- * The router has 2 functions:
+ * The router has 3 functions:
  *
  *      1. Route            => returns the Controller, the Action and the Params for the current Request
- *      2. Url generator    => The router generates urls automatically
+ *      2. ACL              => The router checks if a Role can access to the current route
+ *      3. Url generator    => The router generates urls from a given Controller, Action and Params
  *
  * @package    xenframework
- * @subpackage xen\kernel
+ * @subpackage xen\application
  * @author     Ismael Trascastro <itrascastro@xenframework.com>
  * @copyright  Copyright (c) xenFramework. (http://xenframework.com)
  * @license    MIT License - http://en.wikipedia.org/wiki/MIT_License
@@ -38,7 +38,12 @@ use xen\kernel\exception\NoRouteFoundException;
 class Router
 {
     /**
-     * @var array The routes from all active packages
+     * @var string The url of the current Request
+     */
+    private $_url;
+
+    /**
+     * @var array The defined routes in 'application/configs/routes.php'
      */
     private $_routes;
 
@@ -48,60 +53,64 @@ class Router
     private $_parsedRoutes;
 
     /**
-     * @var array The active packages
+     * @var mixed The controller for manage the Request
      */
-    private $_packages;
+    private $_controller;
+
+    /**
+     * @var string The action for manage the Request
+     */
+    private $_action;
+
+    /**
+     * @var array The params of the current Request
+     */
+    private $_params;
 
     /**
      * __construct
      *
-     * Loads the routes from the packages
-     * Parses the routes
+     * Filters the url
+     * Load the routes from 'application/configs/routes.php'
+     * Parse the routes
      */
-    public function __construct($_packages)
+    public function __construct()
     {
-        $this->_packages = $_packages;
-        $this->_loadRoutesFromPackages();
-        $this->_parsedRoutes = $this->_parseRoutes();
+        $this->_routes          = require str_replace('/', DIRECTORY_SEPARATOR, 'application/configs/routes.php');
+        $this->_parsedRoutes    = $this->_parseRoutes();
+        $this->_params          = array();
     }
 
     /**
-     * _loadRoutesFromPackages
-     *
-     * Loads the routes from the packages routes configuration
-     *
+     * @param mixed $action
      */
-    private function _loadRoutesFromPackages()
+    public function setAction($action)
     {
-        $this->_routes = array();
-
-        foreach ($this->_packages as $package)
-        {
-            $packagePath    = 'application/packages/' . str_replace('\\', DIRECTORY_SEPARATOR, $package);
-            $routes         = require $packagePath . DIRECTORY_SEPARATOR . 'configs/routes.php';
-
-            foreach ($routes as $route => $value)
-            {
-                $value['package']       = $package;
-                $this->_routes[$route]  = $value;
-            }
-        }
-    }
-
-    /**
-     * @param mixed $packages
-     */
-    public function setPackages($packages)
-    {
-        $this->_packages = $packages;
+        $this->_action = $action;
     }
 
     /**
      * @return mixed
      */
-    public function getPackages()
+    public function getAction()
     {
-        return $this->_packages;
+        return $this->_action;
+    }
+
+    /**
+     * @param mixed $controller
+     */
+    public function setController($controller)
+    {
+        $this->_controller = $controller;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getController()
+    {
+        return $this->_controller;
     }
 
     /**
@@ -121,28 +130,44 @@ class Router
     }
 
     /**
-     * match
-     *
-     * After parsing routes the only left key to add is 'params' and it is done right now
-     *
-     * @param string $url
-     *
-     * @return mixed The route if match | False if not match found
+     * @param mixed $url
      */
+    public function setUrl($url)
+    {
+        $this->_url = $url;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUrl()
+    {
+        return $this->_url;
+    }
+
+    /**
+     * @param array $params
+     */
+    public function setParams($params)
+    {
+        $this->_params = $params;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParams()
+    {
+        return $this->_params;
+    }
+
     public function match($url)
     {
-        foreach ($this->_parsedRoutes as $value)
+        foreach ($this->_parsedRoutes as $route => $value)
         {
-            if (preg_match('!^' . $value['path'] . '$!', $url, $result) == 1)
+            if (preg_match('!^' . $route . '$!', $url, $params) == 1)
             {
-                $paramsWithValues = array();
-
-                foreach ($value['params'] as $param)
-                {
-                    $paramsWithValues[$param] = $result[$param];
-                }
-
-                $value['params'] = $paramsWithValues;
+                $value['params'] = $params;
 
                 return $value;
             }
@@ -156,31 +181,41 @@ class Router
      *
      * Generates an url using the routes
      *
-     * Checks all routes against the routeName and checks if params match the given constraints
+     * Checks all routes against $controller, $action, $params to find one that has
+     * the same controller, same action and matches the constraints
      *
      * If a route is found then the params are set to that route
      *
-     * @param string $routeName
-     * @param array $params
+     * @param string $controller
+     * @param string $action
+     * @param array  $params
      *
      * @throws exception\NoRouteFoundException
-     * @internal param string $controller
-     * @internal param string $action
      * @return string The url associated to that controller, action and params.
      */
-    public function toUrl($routeName, $params = array())
+    public function toUrl($controller, $action, $params = array())
     {
-        foreach ($this->_routes as $route => $value)
-        {
-            $constraints = (array_key_exists('constraints', $value)) ? $value['constraints'] : array();
+        foreach ($this->_routes as $route => $value) {
 
-            if ($routeName == $route && $this->_hasParams($value['path'], $params, $constraints))
-            {
-                return $this->_setParamsToRoute($value['path'], $params);
+            if (array_key_exists('constraints', $value)) {
+
+                $constraints = $value['constraints'];
+
+            } else {
+
+                $constraints = array();
+            }
+
+            if ($value['controller'] == $controller &&
+                $value['action'] == $action &&
+                $this->_hasParams($route, $params, $constraints)
+            ) {
+                return $this->_setParamsToRoute($route, $params);
             }
         }
 
-        throw new NoRouteFoundException('Route ' . $routeName . ' not found.');
+        throw new NoRouteFoundException('There is no route associated to the controller ' . $controller .
+                                        ', the action ' . $action . ' and the given params');
     }
 
     /**
@@ -196,8 +231,8 @@ class Router
      */
     private function _setParamsToRoute($route, $params)
     {
-        foreach ($params as $key => $value)
-        {
+        foreach ($params as $key => $value) {
+
             $route = preg_replace('/\{' . $key . '\}/', $value, $route);
         }
 
@@ -213,15 +248,17 @@ class Router
      * @param array     $params
      * @param array     $constraints
      *
-     * @return bool True if the params match the constraints
+     * @return bool
      */
     private function _hasParams($route, $params, $constraints)
     {
-        foreach ($params as $key => $value)
-        {
-            if ( strpos(preg_replace('/\s+/', '', $route), '{' . $key . '}') === false ||
-                (array_key_exists($key, $constraints) &&
-                    preg_match('!' . preg_replace('/\s+/', '', $constraints[$key]) . '!', $value) == 0)
+        foreach ($params as $key => $value) {
+
+            if (strpos(preg_replace('/\s+/', '', $route), '{' . $key . '}') === false ||
+               (
+                   array_key_exists($key, $constraints) &&
+                   preg_match('!' . preg_replace('/\s+/', '', $constraints[$key]) . '!', $value) == 0
+               )
             )
                 return false;
         }
@@ -238,7 +275,7 @@ class Router
      *
      *      - removes white spaces from the route
      *      - gets route param names
-     *      - for each param name, replaces it by its constraints regular expression
+     *      - for each param name, replaces it by its constraints
      *      - sets the param names in the parsed route
      *      - escapes '!' in the parsed route
      *
@@ -249,15 +286,11 @@ class Router
     {
         $parsedRoutes = array();
 
-        foreach ($this->_routes as $route => $routeValue)
-        {
-            if (!isset($routeValue['path']) || !isset($routeValue['controller']) || !isset($routeValue['action']))
-                throw new MalFormedRouteException($route . ' Malformed route. Be sure you set the path, the controller
-                                                and the action sections in your routes definition');
+        foreach ($this->_routes as $route => $routeValue) {
 
-            $pattern = preg_replace('/\s+/', '', $routeValue['path']);
+            $pattern = preg_replace('/\s+/', '', $route);
 
-            $paramNames = $this->_getParamNamesFromRoute($routeValue['path']);
+            $paramNames = $this->_getParamNamesFromRoute($route);
 
             foreach ($paramNames as $paramName) {
 
@@ -274,27 +307,25 @@ class Router
                 }
             }
 
-            $namespace      = (isset($routeValue['namespace'])) ? $routeValue['namespace'] : 'controllers';
-            $allow          = (isset($routeValue['allow'])) ? $routeValue['allow'] : array();
+            if (!isset($routeValue['controller']) || !isset($routeValue['action']))
+                throw new MalFormedRouteException($route . ' Malformed route. Be sure you set the controller,
+                                                the action and the allow sections in your routes definition');
 
-            $cacheExpires   = (isset($routeValue['cache']['expires'])) ? $routeValue['cache']['expires'] : 0;
-            $cacheRoles     = (isset($routeValue['cache']['roles'])) ? $routeValue['cache']['roles'] : array();
-            $cache          = array('expires' => $cacheExpires, 'roles' => $cacheRoles);
-
-            $pattern        = str_replace('!', '\!', $pattern);
+            $namespace  = (isset($routeValue['namespace'])) ? $routeValue['namespace'] : 'controllers';
+            $expires    = (isset($routeValue['expires'])) ? $routeValue['expires'] : 0;
+            $allow      = (isset($routeValue['allow'])) ? $routeValue['allow'] : array();
 
             $parsedRoute = array(
-                'package'       => $routeValue['package'],
-                'path'          => $pattern,
                 'namespace'     => $namespace,
                 'controller'    => $routeValue['controller'],
                 'action'        => $routeValue['action'],
                 'params'        => $paramNames,
                 'allow'         => $allow,
-                'cache'         => $cache,
+                'expires'       => $expires,
             );
 
-            $parsedRoutes[$route] = $parsedRoute;
+            $pattern = str_replace('!', '\!', $pattern);
+            $parsedRoutes[$pattern] = $parsedRoute;
         }
 
         return $parsedRoutes;
