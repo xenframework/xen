@@ -241,7 +241,8 @@ class FrontController
         }
         catch (\Exception $e)
         {
-            ob_end_clean();
+            while (ob_get_contents()) ob_end_clean(); //cleaning and closing all nested open buffers
+            
             ob_start();
 
             $content = $this->_exceptionHandler($e);
