@@ -38,6 +38,7 @@ class DoctrineBootstrap
             'user'     => $dbConfig->username,
             'password' => $dbConfig->password,
             'dbname'   => $dbConfig->dbname,
+            'charset'  => $dbConfig->charset,
         );
 
         if ($applicationMode == "development")
